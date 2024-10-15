@@ -137,9 +137,7 @@ for col in ['T Stage ', 'N Stage', '6th Stage', 'Grade', 'A Stage']:
 
 # Ensure the 'Age' column exists and is numerical
 if 'Age' in bc_data.columns:
-    fig = px.box(bc_data, x='Grade', y='Age',
-                 title="Distribution of Age Across Different Grades",
-                 labels={'Grade': 'Tumor Grade', 'Age': 'Patient Age'})
+    fig = px.box(bc_data, x='Grade', y='Age',title="Distribution of Age Across Different Grades",labels={'Grade': 'Tumor Grade', 'Age': 'Patient Age'})
     fig.show()
 
 
