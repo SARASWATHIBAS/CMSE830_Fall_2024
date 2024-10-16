@@ -68,7 +68,7 @@ if uploaded_file:
 
         st.write("### Interpretation:")
         st.write(
-            "The correlation heatmap visualizes the relationships between numerical features. Darker colors indicate stronger correlations, either positive or negative. Features with high correlations may provide insights into how they interact with each other in the context of breast cancer.")
+            "The correlation heatmap visualizes the relationships between numerical features. Darker colors indicate stronger correlations, either positive or negative.")
 
     # Data Imputation Comparison
     if st.checkbox("Compare Imputation Methods"):
@@ -94,23 +94,7 @@ if uploaded_file:
             st.pyplot(fig)
 
             st.write(f"### Interpretation for {col}:")
-            st.write(
-                "The histograms show the distribution of the values for the mean and KNN imputation methods. KNN may better capture the underlying data distribution by considering the nearest neighbors, whereas mean imputation might lead to underestimating variability.")
-
-    # Scatter Plot for Numerical vs Categorical
-    st.subheader("Scatter Plot")
-    x_axis = st.selectbox("Select X-axis", numeric_filter)
-    y_axis = st.selectbox("Select Y-axis", numeric_filter)
-    hue = st.selectbox("Select Hue (Categorical)", categorical_filter)
-
-    if x_axis and y_axis and hue:
-        fig, ax = plt.subplots()
-        sns.scatterplot(x=data[x_axis], y=data[y_axis], hue=data[hue], palette='husl', ax=ax)
-        st.pyplot(fig)
-
-        st.write("### Interpretation:")
-        st.write(
-            "The scatter plot illustrates the relationship between two numerical features, colored by the categorical variable. Clustering or separation can indicate how the categorical variable affects the numerical features, revealing trends or patterns.")
+            st.write("The histograms show the distribution of the values for the mean and KNN imputation methods.")
 
     # Min-Max Scaling
     if st.checkbox("Apply Min-Max Scaling"):
@@ -120,31 +104,35 @@ if uploaded_file:
         st.write(min_max_scaled_data.describe())
 
         st.write("### Interpretation:")
-        st.write(
-            "Min-Max scaling adjusts the numerical features to a range between 0 and 1. This scaling is essential for algorithms sensitive to feature scales, helping to improve model performance.")
+        st.write("Min-Max scaling adjusts the numerical features to a range between 0 and 1.")
 
     # Advanced Visualizations
     st.sidebar.header("Advanced Visualizations")
-    if st.sidebar.checkbox("Show Pair Plot"):
+    tab1, tab2, tab3 = st.tabs(["Pair Plot", "Interactive Scatter Plot", "Box Plot"])
+
+    with tab1:
         st.subheader("Pair Plot of Numerical Features")
-        fig = sns.pairplot(data[numeric_filter])
-        st.pyplot(fig)
+        if st.checkbox("Show Pair Plot"):
+            fig = sns.pairplot(data[numeric_filter])
+            st.pyplot(fig)
 
-        st.write("### Interpretation:")
-        st.write(
-            "The pair plot visualizes pairwise relationships in the dataset. It can reveal distributions and correlations between features, helping to identify trends or clusters.")
+            st.write("### Interpretation:")
+            st.write("The pair plot visualizes pairwise relationships in the dataset.")
 
-    # Interactive Visualizations with Plotly
-    if st.sidebar.checkbox("Show Interactive Scatter Plot"):
+    with tab2:
         st.subheader("Interactive Scatter Plot")
-        fig = px.scatter(data, x=x_axis, y=y_axis, color=hue, title="Interactive Scatter Plot")
-        st.plotly_chart(fig)
+        x_axis = st.selectbox("Select X-axis", numeric_filter)
+        y_axis = st.selectbox("Select Y-axis", numeric_filter)
+        hue = st.selectbox("Select Hue (Categorical)", categorical_filter)
 
-        st.write("### Interpretation:")
-        st.write(
-            "The interactive scatter plot allows users to hover over points for more information. It provides a dynamic way to explore the relationship between selected features.")
+        if x_axis and y_axis and hue:
+            fig = px.scatter(data, x=x_axis, y=y_axis, color=hue, title="Interactive Scatter Plot")
+            st.plotly_chart(fig)
 
-    if st.sidebar.checkbox("Show Box Plot"):
+            st.write("### Interpretation:")
+            st.write("The interactive scatter plot allows users to hover over points for more information.")
+
+    with tab3:
         st.subheader("Box Plot of Numeric Features by Categorical Feature")
         categorical_col = st.selectbox("Select Categorical Column for Box Plot", categorical_filter)
         if categorical_col:
@@ -153,8 +141,7 @@ if uploaded_file:
             st.pyplot(fig)
 
             st.write("### Interpretation:")
-            st.write(
-                "The box plot displays the distribution of the numerical feature across different categories. It highlights medians, quartiles, and potential outliers, providing insights into how the categorical variable impacts the numerical data.")
+            st.write("The box plot displays the distribution of the numerical feature across different categories.")
 
 # Optional: Footer with contact information
 st.sidebar.markdown("### Contact Information")
