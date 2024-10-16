@@ -25,6 +25,6 @@ The primary dataset used for this project is the SEER Breast Cancer Dataset, whi
 1. Clone the repository:
 git clone https://github.com/SARASWATHIBAS/CMSE830_Fall_2024.git
 2. Navigate to the project directory:
-cd Your-Project-Name
+cd CMSE830_Fall_2024
 3. Install the required packages:
 pip install -r requirements.txt
