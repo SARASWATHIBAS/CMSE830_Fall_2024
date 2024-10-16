@@ -1,117 +1,84 @@
-# Import necessary libraries
 import streamlit as st
 import pandas as pd
-import plotly.express as px
-from sklearn.preprocessing import LabelEncoder
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.impute import KNNImputer, SimpleImputer
+from sklearn.preprocessing import StandardScaler
 import numpy as np
 
+# Load the dataset
+st.title("Breast Cancer Analysis App")
+uploaded_file = st.file_uploader("Upload your Breast Cancer Dataset (CSV)", type=["csv"])
 
-# Function to load the breast cancer dataset
-def load_data():
+if uploaded_file:
     try:
-        bc_data = pd.read_csv('SEER Breast Cancer Dataset .csv')
-        return bc_data
-    except FileNotFoundError as e:
-        st.error(f"Error: {e}")
-        return None
+        data = pd.read_csv(uploaded_file)
+        st.success("Data loaded successfully!")
 
+        # Sidebar filters
+        st.sidebar.header("Filter Data")
+        categorical_filter = st.sidebar.multiselect("Select Categorical Columns to View",
+                                                    data.select_dtypes(include='object').columns)
+        numeric_filter = st.sidebar.multiselect("Select Numeric Columns to View",
+                                                data.select_dtypes(include=np.number).columns)
 
-# Load data
-bc_data = load_data()
+        # Display the filtered data
+        if categorical_filter:
+            st.write("### Categorical Data Overview")
+            st.write(data[categorical_filter].head())
 
-if bc_data is not None:
-    # Display the first few rows of the dataset
-    st.subheader("Dataset Overview")
-    st.write(bc_data.head())
+        if numeric_filter:
+            st.write("### Numerical Data Overview")
+            st.write(data[numeric_filter].describe())
 
-    # Data cleaning and preprocessing
-    st.markdown("## Data Cleaning and Preprocessing")
-    # Remove duplicates
-    bc_data.drop_duplicates(inplace=True)
-    # Check for missing values
-    st.write("Missing values in Breast Cancer dataset:")
-    st.write(bc_data.isnull().sum())
+        # Correlation Heatmap
+        if st.checkbox("Show Correlation Heatmap"):
+            st.subheader("Correlation Heatmap")
+            scaler = StandardScaler()
+            scaled_data = scaler.fit_transform(data[numeric_filter])
+            corr_matrix = np.corrcoef(scaled_data.T)
 
-    # Fill missing values in numerical columns with the mean
-    numeric_cols_bc = bc_data.select_dtypes(include=['float64', 'int64']).columns
-    bc_data[numeric_cols_bc] = bc_data[numeric_cols_bc].fillna(bc_data[numeric_cols_bc].mean())
+            fig, ax = plt.subplots(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=True, xticklabels=numeric_filter, yticklabels=numeric_filter, cmap='coolwarm')
+            st.pyplot(fig)
 
-    # Fill missing values in categorical columns with the mode
-    categorical_cols_bc = bc_data.select_dtypes(include=['object']).columns
-    for column in categorical_cols_bc:
-        bc_data[column].fillna(bc_data[column].mode()[0], inplace=True)
+        # Data Imputation Comparison
+        if st.checkbox("Compare Imputation Methods"):
+            st.subheader("Imputation Methods: Mean vs KNN")
 
-    # Display cleaned dataset information
-    st.write("Cleaned Breast Cancer dataset:")
-    st.write(bc_data.isnull().sum())
+            # Mean Imputation
+            mean_imputer = SimpleImputer(strategy='mean')
+            data_mean_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
 
-    # Encoding categorical variables
-    st.markdown("## Encoding Categorical Variables")
-    ordinal_cols = ['T Stage ', 'N Stage', '6th Stage', 'Grade', 'A Stage']
-    label_encoder = LabelEncoder()
+            # KNN Imputation
+            knn_imputer = KNNImputer(n_neighbors=5)
+            data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
 
-    for col in ordinal_cols:
-        if col in bc_data.columns:
-            bc_data[col] = label_encoder.fit_transform(bc_data[col])
+            # Show distribution comparisons
+            for col in numeric_filter:
+                fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+                sns.histplot(data_mean_imputed[col], kde=True, ax=ax[0], color='skyblue')
+                ax[0].set_title(f'Mean Imputed: {col}')
 
-    # One-hot encoding for nominal categorical variables
-    categorical_cols = bc_data.select_dtypes(include=['object']).columns
-    categorical_cols = [col for col in categorical_cols if col not in ordinal_cols]
-    bc_data = pd.get_dummies(bc_data, columns=categorical_cols, drop_first=True)
+                sns.histplot(data_knn_imputed[col], kde=True, ax=ax[1], color='salmon')
+                ax[1].set_title(f'KNN Imputed: {col}')
 
-    # Drop unnecessary columns
-    bc_data = bc_data.loc[:, ~bc_data.columns.str.contains('^Unnamed')]
+                st.pyplot(fig)
 
-    # Display updated dataset after encoding
-    st.write("Modified Breast Cancer dataset after encoding:")
-    st.write(bc_data.head())
+        # Scatter Plot for Numerical vs Categorical
+        st.subheader("Scatter Plot")
+        x_axis = st.selectbox("Select X-axis", numeric_filter)
+        y_axis = st.selectbox("Select Y-axis", numeric_filter)
+        hue = st.selectbox("Select Hue (Categorical)", categorical_filter)
 
-    # User Input Features
-    st.sidebar.header("User Input Features")
-    t_stage_options = bc_data['T Stage '].unique()
-    selected_t_stage = st.sidebar.selectbox("Select T Stage:", options=t_stage_options)
+        if x_axis and y_axis and hue:
+            fig, ax = plt.subplots()
+            sns.scatterplot(x=data[x_axis], y=data[y_axis], hue=data[hue], palette='husl', ax=ax)
+            ax.set_title(f'Scatter Plot: {y_axis} vs {x_axis} colored by {hue}')
+            st.pyplot(fig)
 
-    n_stage_options = bc_data['N Stage'].unique()
-    selected_n_stage = st.sidebar.selectbox("Select N Stage:", options=n_stage_options)
+    except Exception as e:
+        st.error(f"Error loading data: {e}")
 
-    # Filter data based on selections
-    filtered_data = bc_data[(bc_data['T Stage '] == selected_t_stage) & (bc_data['N Stage'] == selected_n_stage)]
-
-    # Visualizations
-    st.markdown("## Visualizations")
-
-    # Bar plot for T Stage distribution
-    fig_t_stage = px.bar(filtered_data,
-                         x='T Stage ',
-                         title="Distribution of T Stage for Selected N Stage",
-                         labels={'T Stage ': 'T Stage Level'},
-                         color='T Stage ',
-                         color_discrete_sequence=px.colors.qualitative.Plotly)
-    st.plotly_chart(fig_t_stage)
-
-    # Scatter plot for Tumor Size vs Lymph Nodes
-    if 'Tumor Size' in bc_data.columns and 'Lymph Nodes' in bc_data.columns:
-        fig_scatter = px.scatter(filtered_data,
-                                 x='Tumor Size',
-                                 y='Lymph Nodes',
-                                 color='T Stage ',
-                                 title="Tumor Size vs. Lymph Nodes",
-                                 labels={'Tumor Size': 'Tumor Size (mm)', 'Lymph Nodes': 'Lymph Nodes Affected'})
-        st.plotly_chart(fig_scatter)
-
-    # Basic statistics of filtered data
-    st.subheader("Basic Statistics of Filtered Data")
-    st.write(filtered_data.describe())
-
-    # Box plot for Age by Grade
-    if 'Age' in bc_data.columns:
-        fig_age_grade = px.box(bc_data,
-                               x='Grade',
-                               y='Age',
-                               title="Distribution of Age Across Different Grades",
-                               labels={'Grade': 'Tumor Grade', 'Age': 'Patient Age'})
-        st.plotly_chart(fig_age_grade)
-
-    # Add any other visualizations as needed
 else:
-    st.warning("No data available to display.")
+    st.info("Please upload a CSV file to get started.")
