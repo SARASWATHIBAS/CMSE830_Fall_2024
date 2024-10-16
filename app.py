@@ -154,13 +154,14 @@ if uploaded_file:
         st.subheader("Violin Plot")
         numerical_feature = st.selectbox("Select Numerical Feature", numeric_filter)
         categorical_feature = st.selectbox("Select Categorical Feature", categorical_filter)
+        hue_feature_plot = st.selectbox("Select Hue feature", selected_categorical)
 
         show_violin = st.checkbox("Show Violin Plot")
 
         if show_violin and numerical_feature and categorical_feature:
             fig, ax = plt.subplots()
-            sns.violinplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature], ax=ax)
-            ax.set_title(f'Violin Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature}')
+            sns.violinplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature_plot], ax=ax)
+            ax.set_title(f'Violin Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
             st.pyplot(fig)
 
         # Box Plot for two variables
@@ -169,8 +170,8 @@ if uploaded_file:
 
         if show_box and numerical_feature and categorical_feature:
             fig, ax = plt.subplots()
-            sns.boxplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature], ax=ax)
-            ax.set_title(f'Box Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature}')
+            sns.boxplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature_plot], ax=ax)
+            ax.set_title(f'Box Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
             st.pyplot(fig)
 
         # Closing message
