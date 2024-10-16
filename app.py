@@ -3,7 +3,7 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer, SimpleImputer
-from sklearn.preprocessing import StandardScaler, LabelEncoder
+from sklearn.preprocessing import MinMaxScaler, LabelEncoder
 import numpy as np
 
 # Function to load the data
@@ -45,18 +45,23 @@ if uploaded_file:
         if numeric_filter:
             st.write("#### Numerical Data")
             st.write(data[numeric_filter].describe())
+        else:
+            st.write("No numeric columns selected.")
 
     with tabs[1]:
         st.write("### Visualizations")
         if st.checkbox("Show Correlation Heatmap"):
             st.subheader("Correlation Heatmap")
-            scaler = StandardScaler()
-            scaled_data = scaler.fit_transform(data[numeric_filter])
-            corr_matrix = np.corrcoef(scaled_data.T)
+            if numeric_filter:
+                scaler = MinMaxScaler()
+                scaled_data = scaler.fit_transform(data[numeric_filter])
+                corr_matrix = np.corrcoef(scaled_data.T)
 
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, xticklabels=numeric_filter, yticklabels=numeric_filter, cmap='coolwarm')
-            st.pyplot(fig)
+                fig, ax = plt.subplots(figsize=(10, 8))
+                sns.heatmap(corr_matrix, annot=True, xticklabels=numeric_filter, yticklabels=numeric_filter, cmap='coolwarm')
+                st.pyplot(fig)
+            else:
+                st.warning("Please select numeric columns for correlation analysis.")
 
         # Scatter Plot for Numerical vs Categorical
         st.subheader("Scatter Plot")
@@ -102,8 +107,8 @@ if uploaded_file:
             st.write("Encoded Data")
             st.write(encoded_data.head())
 
-        if st.button("Scale Data"):
-            scaler = StandardScaler()
+        if st.button("Scale Data with Min-Max Scaling"):
+            scaler = MinMaxScaler()
             scaled_data = pd.DataFrame(scaler.fit_transform(data[numeric_filter]), columns=numeric_filter)
             st.write("Scaled Data")
             st.write(scaled_data.head())
