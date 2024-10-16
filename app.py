@@ -3,9 +3,8 @@ import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer, SimpleImputer
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
+from sklearn.preprocessing import StandardScaler, LabelEncoder, MinMaxScaler
 import numpy as np
-import plotly.express as px
 
 # Load the dataset
 st.title("Breast Cancer Analysis App")
@@ -14,46 +13,20 @@ uploaded_file = st.file_uploader("Upload your Breast Cancer Dataset (CSV)", type
 if uploaded_file:
     data = pd.read_csv(uploaded_file)
 
-    # Remove 'Unnamed: 3' if present
-    if 'Unnamed: 3' in data.columns:
-        data.drop(columns=['Unnamed: 3'], inplace=True)
+    # Remove any unnamed columns
+    data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
-    # Data Overview
-    st.subheader("Data Overview")
-    st.write(data.head())
-
-    st.write("""
-    ### Description of Data
-    - **Age**: Patient’s age group.
-    - **Race**: Racial classification.
-    - **Marital Status**: Current marital status of the patient.
-    - **T Stage**: Tumor stage based on size.
-    - **N Stage**: Lymph node involvement stage.
-    - **6th Stage**: Stage classification according to the 6th edition of AJCC.
-    - **Grade**: Tumor grade indicating aggressiveness.
-    - **A Stage**: Distant metastasis presence/absence.
-    - **Tumor Size**: Size of the tumor in mm.
-    - **Estrogen/Progesterone Status**: Hormone receptor status.
-    - **Regional Node Examined/Positive**: Number of nodes examined and found positive.
-    - **Survival Months**: Months patient survived.
-    - **Status**: Patient’s survival status.
-    """)
-
-    # Sidebar for filters
+    # Sidebar filters
     st.sidebar.header("Filter Data")
     categorical_filter = st.sidebar.multiselect("Select Categorical Columns to View",
                                                 data.select_dtypes(include='object').columns)
     numeric_filter = st.sidebar.multiselect("Select Numeric Columns to View",
                                             data.select_dtypes(include=np.number).columns)
 
-    # Display filtered data
-    if categorical_filter:
-        st.write("### Categorical Data Overview")
-        st.write(data[categorical_filter].head())
-
-    if numeric_filter:
-        st.write("### Numerical Data Overview")
-        st.write(data[numeric_filter].describe())
+    # Data Overview
+    if st.checkbox("Show Data Overview"):
+        st.subheader("Data Overview")
+        st.write(data.describe(include='all'))
 
     # Correlation Heatmap
     if st.checkbox("Show Correlation Heatmap"):
@@ -66,21 +39,19 @@ if uploaded_file:
         sns.heatmap(corr_matrix, annot=True, xticklabels=numeric_filter, yticklabels=numeric_filter, cmap='coolwarm')
         st.pyplot(fig)
 
-        st.write("### Interpretation:")
-        st.write(
-            "The correlation heatmap visualizes the relationships between numerical features. Darker colors indicate stronger correlations, either positive or negative.")
-
     # Data Imputation Comparison
     if st.checkbox("Compare Imputation Methods"):
         st.subheader("Imputation Methods: Mean vs KNN")
 
         # Mean Imputation
         mean_imputer = SimpleImputer(strategy='mean')
-        data_mean_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        data_mean_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]),
+                                         columns=numeric_filter)
 
         # KNN Imputation
         knn_imputer = KNNImputer(n_neighbors=5)
-        data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]),
+                                        columns=numeric_filter)
 
         # Show distribution comparisons
         for col in numeric_filter:
@@ -93,56 +64,51 @@ if uploaded_file:
 
             st.pyplot(fig)
 
-            st.write(f"### Interpretation for {col}:")
-            st.write("The histograms show the distribution of the values for the mean and KNN imputation methods.")
-
     # Min-Max Scaling
-    if st.checkbox("Apply Min-Max Scaling"):
-        st.subheader("Min-Max Scaled Data")
+    if st.checkbox("Show Min-Max Scaling"):
+        st.subheader("Min-Max Scaling")
         min_max_scaler = MinMaxScaler()
-        min_max_scaled_data = pd.DataFrame(min_max_scaler.fit_transform(data[numeric_filter]), columns=numeric_filter)
-        st.write(min_max_scaled_data.describe())
+        scaled_data_min_max = pd.DataFrame(min_max_scaler.fit_transform(data[numeric_filter]),
+                                            columns=numeric_filter)
 
-        st.write("### Interpretation:")
-        st.write("Min-Max scaling adjusts the numerical features to a range between 0 and 1.")
+        st.write(scaled_data_min_max.head())
 
-    # Advanced Visualizations
-    st.sidebar.header("Advanced Visualizations")
-    tab1, tab2, tab3 = st.tabs(["Pair Plot", "Interactive Scatter Plot", "Box Plot"])
+    # Dynamic Relationship Inference
+    st.subheader("Dynamic Relationship Inference")
 
-    with tab1:
-        st.subheader("Pair Plot of Numerical Features")
-        if st.checkbox("Show Pair Plot"):
-            fig = sns.pairplot(data[numeric_filter])
-            st.pyplot(fig)
+    # Select features for analysis
+    feature_x = st.selectbox("Select Feature X", numeric_filter)
+    feature_y = st.selectbox("Select Feature Y", numeric_filter)
 
-            st.write("### Interpretation:")
-            st.write("The pair plot visualizes pairwise relationships in the dataset.")
+    if feature_x and feature_y:
+        # Scatter plot for the selected features
+        fig, ax = plt.subplots()
+        sns.scatterplot(data=data, x=feature_x, y=feature_y)
+        ax.set_title(f'Scatter Plot: {feature_x} vs {feature_y}')
+        st.pyplot(fig)
 
-    with tab2:
-        st.subheader("Interactive Scatter Plot")
-        x_axis = st.selectbox("Select X-axis", numeric_filter)
-        y_axis = st.selectbox("Select Y-axis", numeric_filter)
-        hue = st.selectbox("Select Hue (Categorical)", categorical_filter)
+        # Calculate and display correlation
+        correlation = data[feature_x].corr(data[feature_y])
+        st.write(f"### Correlation Coefficient between {feature_x} and {feature_y}: {correlation:.2f}")
 
-        if x_axis and y_axis and hue:
-            fig = px.scatter(data, x=x_axis, y=y_axis, color=hue, title="Interactive Scatter Plot")
-            st.plotly_chart(fig)
+        # Interpretation
+        if correlation > 0.5:
+            st.write("### Interpretation: Strong positive relationship.")
+        elif correlation < -0.5:
+            st.write("### Interpretation: Strong negative relationship.")
+        else:
+            st.write("### Interpretation: Weak or no relationship.")
 
-            st.write("### Interpretation:")
-            st.write("The interactive scatter plot allows users to hover over points for more information.")
+    # Scatter Plot for Numerical vs Categorical
+    st.subheader("Scatter Plot")
+    x_axis = st.selectbox("Select X-axis", numeric_filter)
+    y_axis = st.selectbox("Select Y-axis", numeric_filter)
+    hue = st.selectbox("Select Hue (Categorical)", categorical_filter)
 
-    with tab3:
-        st.subheader("Box Plot of Numeric Features by Categorical Feature")
-        categorical_col = st.selectbox("Select Categorical Column for Box Plot", categorical_filter)
-        if categorical_col:
-            fig = plt.figure(figsize=(12, 6))
-            sns.boxplot(data=data, x=categorical_col, y=x_axis)
-            st.pyplot(fig)
+    if x_axis and y_axis and hue:
+        fig, ax = plt.subplots()
+        sns.scatterplot(x=data[x_axis], y=data[y_axis], hue=data[hue], palette='husl', ax=ax)
+        st.pyplot(fig)
 
-            st.write("### Interpretation:")
-            st.write("The box plot displays the distribution of the numerical feature across different categories.")
-
-# Optional: Footer with contact information
-st.sidebar.markdown("### Contact Information")
-st.sidebar.markdown("For any inquiries, please contact: [Your Email](mailto:your-email@example.com)")
+    # Closing message
+    st.write("### Thank you for using the Breast Cancer Analysis App!")
