@@ -5,6 +5,7 @@ import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
+import plotly.express as px
 
 # Load the dataset
 st.title("Breast Cancer Analysis App")
