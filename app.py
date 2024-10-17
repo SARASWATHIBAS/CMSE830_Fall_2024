@@ -52,7 +52,7 @@ if uploaded_file:
         - **Survival Months:** Months patient survived.
         - **Status:** Patient’s survival status.
 
-        This dataset provides key demographic, clinical, and pathological data useful for breast cancer analysis.
+        This dataset provides key demographic, clinical and pathological data useful for breast cancer analysis.
         """)
 
         if selected_categorical:
@@ -127,10 +127,16 @@ if uploaded_file:
 
         if feature_x and feature_y:
             # Scatter plot for the selected features
-            fig, ax = plt.subplots()
-            sns.scatterplot(data=data, x=feature_x, y=feature_y, hue=data[hue_feature])
-            ax.set_title(f'Scatter Plot: {feature_x} vs {feature_y} with hue {hue_feature}')
-            st.pyplot(fig)
+            # fig, ax = plt.subplots()
+            # sns.scatterplot(data=data, x=feature_x, y=feature_y, hue=data[hue_feature])
+            # ax.set_title(f'Scatter Plot: {feature_x} vs {feature_y} with hue {hue_feature}')
+            # st.pyplot(fig)
+
+            fig = px.scatter(data, x=feature_x, y=feature_y, color=data[hue_feature], title="Interactive Scatter Plot")
+            st.plotly_chart(fig)
+
+            st.write("### Interpretation:")
+            st.write("The interactive scatter plot allows users to hover over points for more information.")
 
             # Calculate and display correlation
             correlation = data[feature_x].corr(data[feature_y])
