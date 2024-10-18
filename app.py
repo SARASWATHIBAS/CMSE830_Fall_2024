@@ -8,7 +8,7 @@ import numpy as np
 import plotly.express as px
 
 # Load the dataset from GitHub
-DATA_URL = "https://raw.githubusercontent.com/your-username/your-repository/main/breast_cancer_data.csv"
+DATA_URL = "https://github.com/SARASWATHIBAS/CMSE830_Fall_2024/blob/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
 st.title("Breast Cancer Analysis App")
 
