@@ -17,8 +17,8 @@ try:
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
-# Remove any unnamed columns
-data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+# # Remove any unnamed columns
+# data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
 # Sidebar filters
 st.sidebar.header("Filter Data")
