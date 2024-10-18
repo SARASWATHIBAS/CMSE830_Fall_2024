@@ -8,17 +8,17 @@ import numpy as np
 import plotly.express as px
 
 # Load the dataset from GitHub
-DATA_URL = "https://github.com/SARASWATHIBAS/CMSE830_Fall_2024/blob/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
+url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
 st.title("Breast Cancer Analysis App")
 
 try:
-    data = pd.read_csv(DATA_URL)
+    data = pd.read_csv(url, error_bad_lines=False)
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
-# # Remove any unnamed columns
-# data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+# Remove any unnamed columns
+data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
 # Sidebar filters
 st.sidebar.header("Filter Data")
