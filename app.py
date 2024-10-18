@@ -17,8 +17,6 @@ try:
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
-data = pd.read_csv(uploaded_file)
-
 # Remove any unnamed columns
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
