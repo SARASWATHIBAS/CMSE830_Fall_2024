@@ -13,7 +13,7 @@ url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SE
 st.title("Breast Cancer Analysis App")
 
 try:
-    data = pd.read_csv(url, error_bad_lines=False)
+    data = pd.read_csv(url)
 except Exception as e:
     st.error(f"Error loading data: {e}")
 
