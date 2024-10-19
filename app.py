@@ -27,7 +27,14 @@ st.markdown(
         min-height: 100vh; /* Ensures the div takes full height */
         padding: 20px; /* Optional: Add some padding */
     }
-   
+   .stButton > button {
+        background-color: #007BFF; /* Button color */
+        color: white; /* Button text color */
+        border: none; /* Remove border */
+        border-radius: 5px; /* Rounded corners */
+        padding: 10px; /* Padding */
+        font-size: 16px; /* Font size */
+    }
     </style>
     """,
     unsafe_allow_html=True
@@ -62,6 +69,16 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
 with tab1:
     # Static Overview
     st.header("Data Overview")
+
+    # Message for Feature Selection
+    st.write("### Feature Selection for Analysis")
+    st.write("""
+    Please select **two numeric features** and **one categorical feature** to begin your analysis.
+    - **Numeric Features:** These can include measurements such as Tumor Size or Age.
+    - **Categorical Feature:** This could be a classification such as Cancer Stage.
+
+    Once selected, you'll be able to explore relationships, perform visualizations, and gain insights from the data!
+    """)
     st.markdown("""
     **Overview of the Breast Cancer Dataset:**
 
