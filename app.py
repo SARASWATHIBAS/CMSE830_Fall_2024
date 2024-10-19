@@ -34,7 +34,6 @@ st.markdown(
     .content {
         position: relative;
         z-index: 2;
-        color: white;  /* Change text color if needed */
     }
     </style>
     """,
