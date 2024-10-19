@@ -30,9 +30,10 @@ numeric_filter = data.select_dtypes(include=np.number).columns.tolist()
 selected_categorical = st.sidebar.multiselect("Select Categorical Columns", categorical_filter)
 selected_numeric = st.sidebar.multiselect("Select Numeric Columns", numeric_filter)
 
-# Tab structure
-tab1, tab2, tab3, tab4, tab5 = st.tabs(
-    ["Data Overview", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations"])
+# Tabs for app sections
+tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
+    ["Data Overview", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Search"]
+)
 
 # Data Overview Tab
 with tab1:
@@ -186,3 +187,22 @@ with tab5:
 
     # Closing message
 st.write("### Thank you for using the Breast Cancer Analysis App!")
+
+# Search Tab
+with tab6:
+    st.subheader("Search Data")
+
+    # Select column to search within
+    search_column = st.selectbox("Select Column to Search", data.columns)
+    search_value = st.text_input("Enter Search Value")
+
+    if search_value:
+        filtered_data = data[data[search_column].astype(str).str.contains(search_value, case=False, na=False)]
+        st.write(f"Showing results for: **{search_value}** in **{search_column}**")
+        st.write(filtered_data)
+
+    # Display message if no results found
+    if search_value and filtered_data.empty:
+        st.warning("No results found.")
+
+st.write("Thank you for using the Breast Cancer Analysis App!")
