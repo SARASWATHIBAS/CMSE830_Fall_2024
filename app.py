@@ -28,7 +28,7 @@ st.markdown(
         left: 0;
         right: 0;
         bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity (0.5) to change darkness */
+        background-color: rgba(0, 0, 0, 0.8); /* Adjust opacity (0.5) to change darkness */
         z-index: 1;
     }
     .content {
