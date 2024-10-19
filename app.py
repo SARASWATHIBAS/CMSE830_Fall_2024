@@ -62,8 +62,8 @@ selected_categorical = st.sidebar.multiselect("Select Categorical Columns", cate
 selected_numeric = st.sidebar.multiselect("Select Numeric Columns", numeric_filter)
 
 # Tabs for app sections
-tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs(
-    ["Data Overview", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Search"]
+tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
+    ["Data Overview", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Search", "Modeling"]
 )
 
 # Data Overview Tab
