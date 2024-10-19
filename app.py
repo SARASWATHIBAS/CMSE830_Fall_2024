@@ -26,7 +26,25 @@ st.markdown(
         background-position: center;
         min-height: 100vh; /* Ensures the div takes full height */
         padding: 20px; /* Optional: Add some padding */
+        background-attachment: scroll; /* Makes the background scrollable */
     
+    }
+     /* Semi-transparent overlay for better readability */
+    .stApp:before {
+        content: "";
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5); /* Semi-transparent black overlay */
+        z-index: 1; /* Ensure overlay is on top of background */
+    }
+    
+    /* Ensure content appears above the overlay */
+    .stApp > * {
+        position: relative; /* Ensure content appears above the overlay */
+        z-index: 2; /* Content above the overlay */
     }
     </style>
     """,
