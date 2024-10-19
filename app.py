@@ -188,16 +188,23 @@ with tab5:
     # Closing message
 st.write("### Thank you for using the Breast Cancer Analysis App!")
 
-# Search Tab
+# Search Tab with Dropdown for Categorical Variables
 with tab6:
     st.subheader("Search Data")
 
     # Select column to search within
     search_column = st.selectbox("Select Column to Search", data.columns)
-    search_value = st.text_input("Enter Search Value")
+
+    if search_column in categorical_filter:
+        # If the selected column is categorical, show dropdown with unique values
+        search_value = st.selectbox("Select Value", data[search_column].unique())
+    else:
+        # If the selected column is numeric, allow manual input
+        search_value = st.text_input("Enter Search Value")
 
     if search_value:
-        filtered_data = data[data[search_column].astype(str).str.contains(search_value, case=False, na=False)]
+        # Filter data based on the search
+        filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
         st.write(f"Showing results for: **{search_value}** in **{search_column}**")
         st.write(filtered_data)
 
