@@ -16,20 +16,21 @@ from sklearn.cluster import KMeans
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
 # Add plain background image
+# Set background image
 st.markdown(
     """
     <style>
-    .main {
+    .stApp {
         background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
-        min-height: 100vh; /* Ensures the div takes full height */
-        padding: 20px; /* Optional: Add some padding */
+        color: white;  /* Change text color if needed */
     }
     </style>
     """,
     unsafe_allow_html=True
 )
+
 st.title("Breast Cancer Analysis App")
 
 try:
@@ -57,7 +58,6 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
 
 # Data Overview Tab
 with tab1:
-    st.subheader("Data Overview")
     # Static Overview
     st.header("Data Overview")
     st.markdown("""
