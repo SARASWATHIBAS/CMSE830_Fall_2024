@@ -68,7 +68,7 @@ selected_numeric = st.sidebar.multiselect("Select Numeric Columns", numeric_filt
 
 # Tabs for app sections
 tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
-    ["Data Overview", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Search", "Modeling"]
+    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling"]
 )
 
 # Data Overview Tab
@@ -103,8 +103,46 @@ with tab1:
         st.write("### Selected Numeric Data")
         st.write(data[selected_numeric].describe())
 
+
+# Search Tab with Dropdown for Categorical Variables
+with tab6:
+    st.subheader("Search Data")
+
+    # Select column to search within
+    search_column = st.selectbox("Select Column to Search", data.columns)
+
+    if search_column in categorical_filter:
+        # If the selected column is categorical, show dropdown with unique values
+        search_value = st.selectbox("Select Value", data[search_column].unique())
+    else:
+        # If the selected column is numeric, allow manual input
+        search_value = st.text_input("Enter Search Value")
+
+        # Enter Button to trigger the search
+        if st.button("Go"):
+            # Filter data based on the search
+            filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
+
+            if not filtered_data.empty:
+                st.write(f"### Results for: **{search_value}** in **{search_column}**")
+                st.write(filtered_data)
+
+                # Display basic statistics
+                st.write("### Summary Statistics")
+                st.write(filtered_data.describe(include='all'))
+
+                # Additional insights for numeric data
+                if not filtered_data.select_dtypes(include=np.number).empty:
+                    st.write("#### Additional Numeric Statistics")
+                    st.write(
+                        filtered_data.select_dtypes(include=np.number).agg(['mean', 'median', 'min', 'max', 'count']))
+            else:
+                st.warning("No results found.")
+
+    st.write("Thank you for using the Breast Cancer Analysis App!")
+
 # Correlation Heatmap Tab
-with tab2:
+with tab3:
     st.subheader("Correlation Heatmap")
     if selected_numeric:
         scaler = StandardScaler()
@@ -119,7 +157,7 @@ with tab2:
         st.write("Please select numeric columns for the correlation heatmap.")
 
 # Data Imputation Comparison Tab
-with tab3:
+with tab4:
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
         # Mean Imputation
@@ -146,7 +184,7 @@ with tab3:
         st.write("Please select numeric columns for imputation comparison.")
 
 # Min-Max Scaling Tab
-with tab4:
+with tab5:
     st.subheader("Min-Max Scaling")
     if selected_numeric:
         min_max_scaler = MinMaxScaler()
@@ -158,7 +196,7 @@ with tab4:
         st.write("Please select numeric columns for min-max scaling.")
 
 # Advanced Visualizations Tab
-with tab5:
+with tab6:
     st.subheader("Advanced Visualizations")
 
     # Select features for dynamic plots
@@ -224,42 +262,6 @@ with tab5:
     # Closing message
 st.write("### Thank you for using the Breast Cancer Analysis App!")
 
-# Search Tab with Dropdown for Categorical Variables
-with tab6:
-    st.subheader("Search Data")
-
-    # Select column to search within
-    search_column = st.selectbox("Select Column to Search", data.columns)
-
-    if search_column in categorical_filter:
-        # If the selected column is categorical, show dropdown with unique values
-        search_value = st.selectbox("Select Value", data[search_column].unique())
-    else:
-        # If the selected column is numeric, allow manual input
-        search_value = st.text_input("Enter Search Value")
-
-        # Enter Button to trigger the search
-        if st.button("Go"):
-            # Filter data based on the search
-            filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
-
-            if not filtered_data.empty:
-                st.write(f"### Results for: **{search_value}** in **{search_column}**")
-                st.write(filtered_data)
-
-                # Display basic statistics
-                st.write("### Summary Statistics")
-                st.write(filtered_data.describe(include='all'))
-
-                # Additional insights for numeric data
-                if not filtered_data.select_dtypes(include=np.number).empty:
-                    st.write("#### Additional Numeric Statistics")
-                    st.write(
-                        filtered_data.select_dtypes(include=np.number).agg(['mean', 'median', 'min', 'max', 'count']))
-            else:
-                st.warning("No results found.")
-
-    st.write("Thank you for using the Breast Cancer Analysis App!")
 # Modeling Tab
 # Modeling Tab
 with tab7:
@@ -268,8 +270,20 @@ with tab7:
     # Clustering Analysis
     if st.checkbox("Perform Clustering Analysis"):
         st.subheader("K-Means Clustering Analysis")
-        # Clustering code remains the same...
 
+        # Select features for clustering
+        if selected_numeric:
+            X_clustering = data[selected_numeric]
+            kmeans = KMeans(n_clusters=3, random_state=42)
+            data['Cluster'] = kmeans.fit_predict(X_clustering)
+
+            # Plot Clusters (2D projection)
+            plt.figure(figsize=(8, 6))
+            plt.scatter(data['Tumor Size'], data['Age'], c=data['Cluster'], cmap='viridis')
+            plt.xlabel('Tumor Size')
+            plt.ylabel('Age')
+            plt.title('K-Means Clustering of Breast Cancer Data')
+            st.pyplot(plt)
     # Polynomial Regression Analysis
     if st.checkbox("Perform Polynomial Regression Analysis"):
         st.subheader("Polynomial Regression Analysis")
