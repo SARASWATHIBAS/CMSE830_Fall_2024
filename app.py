@@ -24,7 +24,7 @@ st.markdown(
         background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
-        color: white;  /* Change text color if needed */
+    
     }
     </style>
     """,
