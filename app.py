@@ -270,8 +270,9 @@ with tab7:
     st.subheader("K-Means Clustering Analysis")
 
     # User selects features for clustering
+    numerical_features = data.select_dtypes(include=['int64', 'float64']).columns
     selected_features = st.multiselect("Select Features for Clustering (Choose 2)",
-                                       options=data.columns, default=["Tumor Size", "Age"])
+                                       options=numerical_features, default=["Tumor Size", "Age"])
 
     if len(selected_features) == 2:  # Ensure exactly two features are selected
         # Extract selected features for clustering
