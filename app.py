@@ -321,10 +321,6 @@ with tab7:
     if len(selected_features) == 2:  # Ensure exactly two features are selected
         # Extract selected features for clustering
 
-        # Sidebar for feature selection (replace with your own features)
-        selected_features = st.sidebar.multiselect("Select Features", data.columns.tolist(),
-                                                   default=data.columns[:2].tolist())
-
         X_clustering = data[selected_features]
 
         # Apply K-Means clustering
