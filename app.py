@@ -51,6 +51,7 @@ except Exception as e:
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
 # Sidebar filters
+# Sidebar filters
 st.sidebar.header("Filter Data")
 
 # Multi-select for categorical and numeric features
