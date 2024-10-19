@@ -255,3 +255,58 @@ with tab6:
                 st.warning("No results found.")
 
     st.write("Thank you for using the Breast Cancer Analysis App!")
+# Modeling Tab
+# Modeling Tab
+with tab7:
+    st.subheader("Modeling Analysis")
+
+    # Clustering Analysis
+    if st.checkbox("Perform Clustering Analysis"):
+        st.subheader("K-Means Clustering Analysis")
+        # Clustering code remains the same...
+
+    # Polynomial Regression Analysis
+    if st.checkbox("Perform Polynomial Regression Analysis"):
+        st.subheader("Polynomial Regression Analysis")
+
+        # Select numerical feature
+        selected_numeric_feature = st.selectbox("Choose a Numerical Feature", numeric_filter)
+
+        # Ensure the chosen feature is valid
+        if selected_numeric_feature and 'Survival Months' in data.columns:
+            X = data[[selected_numeric_feature]]
+            y = data['Survival Months']
+
+
+            # Create polynomial features
+            def create_polynomial_data(X, degree=2):
+                poly = PolynomialFeatures(degree=degree)
+                return poly.fit_transform(X)
+
+
+            # Create polynomial features
+            X_poly = create_polynomial_data(X, degree=2)
+
+            # Split the data into training and testing sets
+            X_train, X_test, y_train, y_test = train_test_split(X_poly, y, test_size=0.2, random_state=42)
+
+            # Fit the polynomial regression model
+            model = LinearRegression()
+            model.fit(X_train, y_train)
+
+            # Make predictions
+            y_pred = model.predict(X_test)
+
+            # Evaluate the model
+            mse = mean_squared_error(y_test, y_pred)
+            st.write(f"Mean Squared Error: {mse:.2f}")
+
+            # Plotting true vs predicted values
+            plt.figure(figsize=(10, 6))
+            plt.scatter(X_test[:, 1], y_test, color='blue', label='True Values', alpha=0.5)
+            plt.scatter(X_test[:, 1], y_pred, color='red', label='Predicted Values', alpha=0.5)
+            plt.title(f'True vs Predicted Values for {selected_numeric_feature} vs Survival Months')
+            plt.xlabel(selected_numeric_feature)
+            plt.ylabel('Survival Months')
+            plt.legend()
+            st.pyplot(plt)
