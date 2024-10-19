@@ -72,24 +72,14 @@ if st.sidebar.button("Reset Filters", key="reset_filters_button"):
     st.session_state.selected_numeric = []
     st.session_state.is_filtered = False  # Reset the filter state as well
 
-def update_selection(selected, category):
-    if selected:
-        if category == "categorical":
-            st.session_state.selected_categorical = selected
-        else:
-            st.session_state.selected_numeric = selected
-        st.experimental_rerun()  # Rerun the app to refresh the state
 
-# Multi-select for categorical columns
+# Multi-select for categorical and numeric columns
 selected_categorical = st.sidebar.multiselect(
     "Select Categorical Columns",
     categorical_filter,
     default=st.session_state.selected_categorical,
-    key="categorical_multiselect",
-    on_change=lambda: update_selection(selected_categorical, "categorical")
+    key="categorical_multiselect"
 )
-
-
 selected_numeric = st.sidebar.multiselect(
     "Select Numeric Columns",
     numeric_filter,
