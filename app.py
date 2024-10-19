@@ -62,31 +62,39 @@ if 'selected_categorical' not in st.session_state:
     st.session_state.selected_categorical = []
 if 'selected_numeric' not in st.session_state:
     st.session_state.selected_numeric = []
+if 'is_filtered' not in st.session_state:
+    st.session_state.is_filtered = False
 
 # Allow users to reset their selections
 if st.sidebar.button("Reset Filters"):
     st.session_state.selected_categorical = []
     st.session_state.selected_numeric = []
+    st.session_state.is_filtered = False  # Reset the filter state as well
 
-selected_categorical = st.sidebar.multiselect("Select Categorical Columns", categorical_filter, default=st.session_state.selected_categorical)
-selected_numeric = st.sidebar.multiselect("Select Numeric Columns", numeric_filter, default=st.session_state.selected_numeric)
-
-# Save selections to session state
-st.session_state.selected_categorical = selected_categorical
-st.session_state.selected_numeric = selected_numeric
+# Multi-select for categorical and numeric columns
+selected_categorical = st.sidebar.multiselect(
+    "Select Categorical Columns",
+    categorical_filter,
+    default=st.session_state.selected_categorical
+)
+selected_numeric = st.sidebar.multiselect(
+    "Select Numeric Columns",
+    numeric_filter,
+    default=st.session_state.selected_numeric
+)
 
 # Add a "Go" button
 if st.sidebar.button("Go"):
-    st.session_state.is_filtered = True  # Flag to indicate that filtering is requested
-else:
-    st.session_state.is_filtered = False
+    # Update session state with current selections
+    st.session_state.selected_categorical = selected_categorical
+    st.session_state.selected_numeric = selected_numeric
+    st.session_state.is_filtered = True  # Set filter state to True
 
 # Notify user of selections
 if st.session_state.is_filtered:
     st.sidebar.write("### Selected Filters:")
-    st.sidebar.write(f"**Categorical Columns:** {', '.join(selected_categorical) if selected_categorical else 'None'}")
-    st.sidebar.write(f"**Numeric Columns:** {', '.join(selected_numeric) if selected_numeric else 'None'}")
-
+    st.sidebar.write(f"**Categorical Columns:** {', '.join(st.session_state.selected_categorical) if st.session_state.selected_categorical else 'None'}")
+    st.sidebar.write(f"**Numeric Columns:** {', '.join(st.session_state.selected_numeric) if st.session_state.selected_numeric else 'None'}")
 
 
 # Tabs for app sections
