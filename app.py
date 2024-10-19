@@ -344,27 +344,7 @@ with tab7:
 
         # Display the plot in Streamlit
         st.plotly_chart(fig)
-        else:
-            st.warning("Please select at least two features for clustering.")
-        X_clustering = data[selected_features]
 
-        # Initialize and fit KMeans
-        kmeans = KMeans(n_clusters=3, random_state=42)
-        data['Cluster'] = kmeans.fit_predict(X_clustering)
-
-        # Plot Clusters (2D Projection)
-        plt.figure(figsize=(8, 6))
-        plt.scatter(data[selected_features[0]], data[selected_features[1]],
-                    c=data['Cluster'], cmap='viridis', alpha=0.6)
-        plt.xlabel(selected_features[0])
-        plt.ylabel(selected_features[1])
-        plt.title('K-Means Clustering of Selected Features')
-        st.pyplot(plt)
-
-        # Display cluster centroids
-        centroids = kmeans.cluster_centers_
-        st.write("### Cluster Centroids")
-        st.write(pd.DataFrame(centroids, columns=selected_features))
     else:
         st.warning("Please select exactly **two** features for clustering.")
     # Polynomial Regression Analysis
