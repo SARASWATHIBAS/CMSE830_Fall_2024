@@ -26,8 +26,6 @@ st.markdown(
         background-position: center;
         min-height: 100vh; /* Ensures the div takes full height */
         padding: 20px; /* Optional: Add some padding */
-        background-attachment: scroll; /* Makes the background scrollable */
-    
     }
    
     </style>
