@@ -202,14 +202,25 @@ with tab6:
         # If the selected column is numeric, allow manual input
         search_value = st.text_input("Enter Search Value")
 
-    if search_value:
-        # Filter data based on the search
-        filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
-        st.write(f"Showing results for: **{search_value}** in **{search_column}**")
-        st.write(filtered_data)
+        # Enter Button to trigger the search
+        if st.button("Enter"):
+            # Filter data based on the search
+            filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
 
-    # Display message if no results found
-    if search_value and filtered_data.empty:
-        st.warning("No results found.")
+            if not filtered_data.empty:
+                st.write(f"### Results for: **{search_value}** in **{search_column}**")
+                st.write(filtered_data)
 
-st.write("Thank you for using the Breast Cancer Analysis App!")
+                # Display basic statistics
+                st.write("### Summary Statistics")
+                st.write(filtered_data.describe(include='all'))
+
+                # Additional insights for numeric data
+                if not filtered_data.select_dtypes(include=np.number).empty:
+                    st.write("#### Additional Numeric Statistics")
+                    st.write(
+                        filtered_data.select_dtypes(include=np.number).agg(['mean', 'median', 'min', 'max', 'count']))
+            else:
+                st.warning("No results found.")
+
+    st.write("Thank you for using the Breast Cancer Analysis App!")
