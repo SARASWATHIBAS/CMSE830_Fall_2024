@@ -15,37 +15,21 @@ from sklearn.cluster import KMeans
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
-
-# Add background image
+# Add plain background image
 st.markdown(
     """
     <style>
     .main {
-        position: relative;
         background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
         min-height: 100vh; /* Ensures the div takes full height */
         padding: 20px; /* Optional: Add some padding */
     }
-    .overlay {
-        position: absolute;
-        top: 0;
-        left: 0;
-        right: 0;
-        bottom: 0;
-        background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity to change darkness */
-        z-index: 1;
-    }
-    .content {
-        position: relative;
-        z-index: 2;
-    }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 st.title("Breast Cancer Analysis App")
 
 try:
