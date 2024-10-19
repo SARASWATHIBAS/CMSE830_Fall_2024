@@ -24,6 +24,8 @@ st.markdown(
         background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
+        min-height: 100vh; /* Ensures the div takes full height */
+        padding: 20px; /* Optional: Add some padding */
     
     }
     </style>
