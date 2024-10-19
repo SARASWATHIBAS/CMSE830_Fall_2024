@@ -6,6 +6,11 @@ from sklearn.impute import KNNImputer, SimpleImputer
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 import numpy as np
 import plotly.express as px
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
 
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
