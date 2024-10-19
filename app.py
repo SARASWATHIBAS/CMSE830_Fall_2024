@@ -320,6 +320,32 @@ with tab7:
 
     if len(selected_features) == 2:  # Ensure exactly two features are selected
         # Extract selected features for clustering
+
+        # Sidebar for feature selection (replace with your own features)
+        selected_features = st.sidebar.multiselect("Select Features", data.columns.tolist(),
+                                                   default=data.columns[:2].tolist())
+
+        X_clustering = data[selected_features]
+
+        # Apply K-Means clustering
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        data['Cluster'] = kmeans.fit_predict(X_clustering)
+
+        # Create interactive scatter plot using Plotly
+        fig = px.scatter(data, x=selected_features[0], y=selected_features[1],
+                         color='Cluster', title='K-Means Clustering of Selected Features',
+                         labels={selected_features[0]: selected_features[0],
+                                 selected_features[1]: selected_features[1]},
+                         color_continuous_scale=px.colors.sequential.Viridis)
+
+        # Update layout for better display
+        fig.update_traces(marker=dict(size=10, opacity=0.6))
+        fig.update_layout(legend_title_text='Cluster')
+
+        # Display the plot in Streamlit
+        st.plotly_chart(fig)
+        else:
+            st.warning("Please select at least two features for clustering.")
         X_clustering = data[selected_features]
 
         # Initialize and fit KMeans
