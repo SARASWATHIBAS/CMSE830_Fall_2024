@@ -15,16 +15,31 @@ url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SE
 st.markdown(
     """
     <style>
-    .stApp {
+    .main {
+        position: relative;
         background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
+        padding: 20px; /* Optional: Add some padding */
+    }
+    .overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background-color: rgba(0, 0, 0, 0.5); /* Adjust opacity (0.5) to change darkness */
+        z-index: 1;
+    }
+    .content {
+        position: relative;
+        z-index: 2;
+        color: white;  /* Change text color if needed */
     }
     </style>
     """,
     unsafe_allow_html=True
 )
-
 
 st.title("Breast Cancer Analysis App")
 
