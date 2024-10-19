@@ -8,6 +8,22 @@ import numpy as np
 import plotly.express as px
 
 # Load the dataset from GitHub
+
+# Add background image
+st.markdown(
+    """
+    <style>
+    .stApp {
+        background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/blob/main/back_drop.png');
+        background-size: cover;
+        background-position: center;
+        color: white;  /* Change text color if needed */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
 st.title("Breast Cancer Analysis App")
@@ -203,7 +219,7 @@ with tab6:
         search_value = st.text_input("Enter Search Value")
 
         # Enter Button to trigger the search
-        if st.button("Enter"):
+        if st.button("Go"):
             # Filter data based on the search
             filtered_data = data[data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
 
