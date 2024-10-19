@@ -105,7 +105,7 @@ with tab1:
 
 
 # Search Tab with Dropdown for Categorical Variables
-with tab6:
+with tab2:
     st.subheader("Search Data")
 
     # Select column to search within
@@ -267,23 +267,35 @@ st.write("### Thank you for using the Breast Cancer Analysis App!")
 with tab7:
     st.subheader("Modeling Analysis")
 
-    # Clustering Analysis
-    if st.checkbox("Perform Clustering Analysis"):
-        st.subheader("K-Means Clustering Analysis")
+    st.subheader("K-Means Clustering Analysis")
 
-        # Select features for clustering
-        if selected_numeric:
-            X_clustering = data[selected_numeric]
-            kmeans = KMeans(n_clusters=3, random_state=42)
-            data['Cluster'] = kmeans.fit_predict(X_clustering)
+    # User selects features for clustering
+    selected_features = st.multiselect("Select Features for Clustering (Choose 2)",
+                                       options=data.columns, default=["Tumor Size", "Age"])
 
-            # Plot Clusters (2D projection)
-            plt.figure(figsize=(8, 6))
-            plt.scatter(data['Tumor Size'], data['Age'], c=data['Cluster'], cmap='viridis')
-            plt.xlabel('Tumor Size')
-            plt.ylabel('Age')
-            plt.title('K-Means Clustering of Breast Cancer Data')
-            st.pyplot(plt)
+    if len(selected_features) == 2:  # Ensure exactly two features are selected
+        # Extract selected features for clustering
+        X_clustering = data[selected_features]
+
+        # Initialize and fit KMeans
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        data['Cluster'] = kmeans.fit_predict(X_clustering)
+
+        # Plot Clusters (2D Projection)
+        plt.figure(figsize=(8, 6))
+        plt.scatter(data[selected_features[0]], data[selected_features[1]],
+                    c=data['Cluster'], cmap='viridis', alpha=0.6)
+        plt.xlabel(selected_features[0])
+        plt.ylabel(selected_features[1])
+        plt.title('K-Means Clustering of Selected Features')
+        st.pyplot(plt)
+
+        # Display cluster centroids
+        centroids = kmeans.cluster_centers_
+        st.write("### Cluster Centroids")
+        st.write(pd.DataFrame(centroids, columns=selected_features))
+    else:
+        st.warning("Please select exactly **two** features for clustering.")
     # Polynomial Regression Analysis
     if st.checkbox("Perform Polynomial Regression Analysis"):
         st.subheader("Polynomial Regression Analysis")
