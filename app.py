@@ -16,7 +16,7 @@ st.markdown(
     """
     <style>
     .stApp {
-        background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/blob/main/back_drop.png');
+        background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
         background-size: cover;
         background-position: center;
     }
