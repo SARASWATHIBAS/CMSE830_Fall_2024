@@ -47,9 +47,15 @@ data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 # Sidebar filters
 st.sidebar.header("Filter Data")
 
+
 # Multi-select for categorical and numeric features
 categorical_filter = data.select_dtypes(include='object').columns.tolist()
 numeric_filter = data.select_dtypes(include=np.number).columns.tolist()
+
+# Default selections for categorical and numeric columns
+default_categorical = categorical_filter[:2]  # Select the first 2 categorical columns as default
+default_numeric = numeric_filter[:2]  # Select the first 2 numeric columns as default
+
 
 # Store selections in session state to maintain state across runs
 if 'selected_categorical' not in st.session_state:
