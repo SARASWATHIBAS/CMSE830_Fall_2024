@@ -242,11 +242,13 @@ with tab6:
     st.subheader("Advanced Visualizations")
 
     # Select features for dynamic plots
-    feature_x = st.selectbox("Select Feature X", selected_numeric)
-    feature_y = st.selectbox("Select Feature Y", selected_numeric)
-    hue_feature = st.selectbox("Select Hue (Categorical)", selected_categorical)
+    feature_x = st.selectbox("Select Feature X", selected_numeric, key="feature_x")
 
-    if feature_x and feature_y:
+    # Exclude the selected X feature from Y's options
+    remaining_features_y = [col for col in selected_numeric if col != feature_x]
+    feature_y = st.selectbox("Select Feature Y", remaining_features_y, key="feature_y")
+
+if feature_x and feature_y:
         # Scatter plot for the selected features
         # fig, ax = plt.subplots()
         # sns.scatterplot(data=data, x=feature_x, y=feature_y, hue=data[hue_feature])
