@@ -71,18 +71,17 @@ if st.sidebar.button("Reset Filters", key="reset_filters_button"):
     st.session_state.selected_numeric = []
     st.session_state.is_filtered = False  # Reset the filter state as well
 
-
 # Multi-select for categorical and numeric columns
 selected_categorical = st.sidebar.multiselect(
     "Select Categorical Columns",
     categorical_filter,
-    default=st.session_state.selected_categorical,
+    default=default_categorical,
     key="categorical_multiselect"
 )
 selected_numeric = st.sidebar.multiselect(
     "Select Numeric Columns",
     numeric_filter,
-    default=st.session_state.selected_numeric,
+    default=default_numeric,
     key="numeric_multiselect"
 )
 
