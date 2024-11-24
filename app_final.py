@@ -20,13 +20,6 @@ url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SE
 st.markdown(
     """
     <style>
-    .stApp {
-        background-image: url('https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/back_drop.png');
-        background-size: cover;
-        background-position: center;
-        min-height: 100vh; /* Ensures the div takes full height */
-        padding: 20px; /* Optional: Add some padding */
-    }
    .stButton > button {
         background-color: #007BFF; /* Button color */
         color: white; /* Button text color */
