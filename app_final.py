@@ -391,3 +391,114 @@ with tab7:
             plt.ylabel('Survival Months')
             plt.legend()
             st.pyplot(plt)
+
+# Main Streamlit App Structure
+st.title("Advanced Data Cleaning and Preprocessing")
+
+# Create a tab for data cleaning and preprocessing
+with st.expander("Click to expand: Advanced Data Cleaning and Preprocessing"):
+    # Display original data info
+    st.write("### Original Data Overview")
+    st.write(f"Rows and Columns: {data.shape}")
+    st.write("First few rows of the dataset:")
+    st.write(data.head())
+
+    # Remove Duplicates
+    st.write("### Removing Duplicates")
+    data_no_duplicates = data.drop_duplicates()
+    st.write(f"Rows after removing duplicates: {data_no_duplicates.shape[0]}")
+    st.write("Sample after removing duplicates:")
+    st.write(data_no_duplicates.head())
+
+    # Handle Missing Data (Advanced Imputation)
+    st.write("### Handling Missing Data with Imputation")
+
+    # Impute missing data using KNN (K-Nearest Neighbors)
+    knn_imputer = KNNImputer(n_neighbors=5)
+    data_imputed_knn = pd.DataFrame(knn_imputer.fit_transform(data_no_duplicates.select_dtypes(include=np.number)),
+                                    columns=data_no_duplicates.select_dtypes(include=np.number).columns)
+    data_no_duplicates.update(data_imputed_knn)
+
+    # Impute categorical columns with the mode (most frequent value)
+    categorical_columns = data_no_duplicates.select_dtypes(include='object').columns.tolist()
+    for col in categorical_columns:
+        mode_value = data_no_duplicates[col].mode()[0]
+        data_no_duplicates[col].fillna(mode_value, inplace=True)
+
+    st.write(f"Rows after imputation: {data_no_duplicates.shape[0]}")
+    st.write("Sample after missing data imputation:")
+    st.write(data_no_duplicates.head())
+
+    # Outlier Detection using Z-Score Method
+    st.write("### Outlier Detection and Removal (Z-Score Method)")
+    z_scores = np.abs(stats.zscore(data_no_duplicates.select_dtypes(include=np.number)))
+    outliers = (z_scores > 3).all(axis=1)
+    data_no_outliers = data_no_duplicates[~outliers]
+    st.write(f"Rows after outlier removal: {data_no_outliers.shape[0]}")
+    st.write("Sample after outlier removal:")
+    st.write(data_no_outliers.head())
+
+    # Feature Scaling (Standardization & Min-Max Scaling)
+    st.write("### Feature Scaling")
+    scaler = StandardScaler()
+    scaled_data = pd.DataFrame(scaler.fit_transform(data_no_outliers.select_dtypes(include=np.number)),
+                               columns=data_no_outliers.select_dtypes(include=np.number).columns)
+
+    min_max_scaler = MinMaxScaler()
+    scaled_data_min_max = pd.DataFrame(min_max_scaler.fit_transform(data_no_outliers.select_dtypes(include=np.number)),
+                                       columns=data_no_outliers.select_dtypes(include=np.number).columns)
+
+    st.write("Data after scaling (Standardization):")
+    st.write(scaled_data.head())
+
+    st.write("Data after scaling (Min-Max Scaling):")
+    st.write(scaled_data_min_max.head())
+
+    # Visualizations to understand cleaned data
+    st.write("### Visualizations of Cleaned Data")
+
+    # Boxplot for numerical features
+    fig, ax = plt.subplots(figsize=(10, 6))
+    sns.boxplot(data=data_no_outliers.select_dtypes(include=np.number))
+    st.pyplot(fig)
+
+    # Pairwise Scatter Plot of cleaned data
+    fig = px.scatter_matrix(data_no_outliers.select_dtypes(include=np.number),
+                            dimensions=data_no_outliers.select_dtypes(include=np.number).columns,
+                            title="Pairwise Scatter Plot of Cleaned Data")
+    st.plotly_chart(fig)
+
+# Display other sections of the app here (like modeling, etc.)
+# Example of adding another section for clustering or modeling
+
+with st.expander("Click to expand: K-Means Clustering"):
+    st.subheader("K-Means Clustering Analysis")
+
+    # Select features for clustering
+    numerical_features = data_no_outliers.select_dtypes(include=['int64', 'float64']).columns
+    selected_features = st.multiselect("Select Features for Clustering (Choose 2)",
+                                       options=numerical_features, default=["Tumor Size", "Age"])
+
+    if len(selected_features) == 2:  # Ensure exactly two features are selected
+        # Extract selected features for clustering
+        X_clustering = data_no_outliers[selected_features]
+
+        # Apply K-Means clustering
+        kmeans = KMeans(n_clusters=3, random_state=42)
+        data_no_outliers['Cluster'] = kmeans.fit_predict(X_clustering)
+
+        # Create interactive scatter plot using Plotly
+        fig = px.scatter(data_no_outliers, x=selected_features[0], y=selected_features[1],
+                         color='Cluster', title='K-Means Clustering of Selected Features',
+                         labels={selected_features[0]: selected_features[0],
+                                 selected_features[1]: selected_features[1]},
+                         color_continuous_scale=px.colors.sequential.Viridis)
+
+        # Update layout for better display
+        fig.update_traces(marker=dict(size=10, opacity=0.6))
+        fig.update_layout(legend_title_text='Cluster')
+
+        # Display the plot in Streamlit
+        st.plotly_chart(fig)
+    else:
+        st.warning("Please select exactly **two** features for clustering.")
