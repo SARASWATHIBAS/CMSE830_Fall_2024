@@ -247,8 +247,10 @@ with tab6:
     # Exclude the selected X feature from Y's options
     remaining_features_y = [col for col in selected_numeric if col != feature_x]
     feature_y = st.selectbox("Select Feature Y", remaining_features_y, key="feature_y")
+    # Hue feature selection
+    hue_feature = st.selectbox("Select Hue (Categorical)", selected_categorical, key="hue_feature")
 
-if feature_x and feature_y:
+    if feature_x and feature_y:
         # Scatter plot for the selected features
         # fig, ax = plt.subplots()
         # sns.scatterplot(data=data, x=feature_x, y=feature_y, hue=data[hue_feature])
@@ -263,6 +265,7 @@ if feature_x and feature_y:
 
         # Calculate and display correlation
         correlation = data[feature_x].corr(data[feature_y])
+        st.write(f"### I give you dynamic correlation interpretation")
         st.write(f"### Correlation Coefficient between {feature_x} and {feature_y}: {correlation:.2f}")
 
         # Interpretation
@@ -273,7 +276,7 @@ if feature_x and feature_y:
         else:
             st.write("### Interpretation: Weak or no relationship.")
 
-    # Additional visualizations
+# Additional visualizations
     if st.checkbox("Show Pair Plot"):
         st.subheader("Pair Plot")
         sns.pairplot(data[selected_numeric + [hue_feature]], hue=hue_feature)
