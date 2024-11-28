@@ -455,62 +455,62 @@ with tab8:
     # Encoding Categorical Variables
     encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
     if encoding_method == "Label Encoding":
-        label_column = st.selectbox("Select column for Label Encoding", df.select_dtypes(include=['object']).columns)
+        label_column = st.selectbox("Select column for Label Encoding", data.select_dtypes(include=['object']).columns)
         label_encoder = LabelEncoder()
-        df[label_column] = label_encoder.fit_transform(df[label_column])
-        st.write(f"Label Encoded Data for {label_column}:", df.head())
+        data[label_column] = label_encoder.fit_transform(data[label_column])
+        st.write(f"Label Encoded Data for {label_column}:", data.head())
     elif encoding_method == "One-Hot Encoding":
-        df = pd.get_dummies(df, columns=df.select_dtypes(include=['object']).columns)
-        st.write("One-Hot Encoded Data:", df.head())
+        data = pd.get_dummies(data, columns=data.select_dtypes(include=['object']).columns)
+        st.write("One-Hot Encoded Data:", data.head())
 
     # Normalization and Scaling
     scale_method = st.selectbox("Choose scaling method", ("Min-Max Scaling", "Standardization", "Robust Scaling"))
     if scale_method == "Min-Max Scaling":
         scaler = MinMaxScaler()
-        df_scaled = scaler.fit_transform(df.select_dtypes(include=['float64', 'int64']))
-        df[df.select_dtypes(include=['float64', 'int64']).columns] = df_scaled
-        st.write("Min-Max Scaled Data:", df.head())
+        data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+        data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+        st.write("Min-Max Scaled Data:", data.head())
     elif scale_method == "Standardization":
         scaler = StandardScaler()
-        df_scaled = scaler.fit_transform(df.select_dtypes(include=['float64', 'int64']))
-        df[df.select_dtypes(include=['float64', 'int64']).columns] = df_scaled
-        st.write("Standardized Data:", df.head())
+        data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+        data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+        st.write("Standardized Data:", data.head())
     elif scale_method == "Robust Scaling":
         scaler = RobustScaler()
-        df_scaled = scaler.fit_transform(df.select_dtypes(include=['float64', 'int64']))
-        df[df.select_dtypes(include=['float64', 'int64']).columns] = df_scaled
-        st.write("Robust Scaled Data:", df.head())
+        data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+        data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+        st.write("Robust Scaled Data:", data.head())
 
     # Feature Engineering: Extracting Date-Time Features
-    if "date" in df.columns:
-        df['year'] = pd.to_datetime(df['date']).dt.year
-        df['month'] = pd.to_datetime(df['date']).dt.month
-        df['weekday'] = pd.to_datetime(df['date']).dt.weekday
-        st.write("Extracted Date Features:", df.head())
+    if "date" in data.columns:
+        data['year'] = pd.to_datetime(data['date']).dt.year
+        data['month'] = pd.to_datetime(data['date']).dt.month
+        data['weekday'] = pd.to_datetime(data['date']).dt.weekday
+        st.write("Extracted Date Features:", data.head())
 
     # Binning continuous features (e.g., age)
-    if "age" in df.columns:
-        df['age_group'] = pd.cut(df['age'], bins=[0, 18, 35, 50, 100], labels=['0-18', '19-35', '36-50', '51+'])
-        st.write("Binned Age Groups:", df.head())
+    if "age" in data.columns:
+        data['age_group'] = pd.cut(data['age'], bins=[0, 18, 35, 50, 100], labels=['0-18', '19-35', '36-50', '51+'])
+        st.write("Binned Age Groups:", data.head())
 
     # Handling Outliers: Z-Score and IQR Methods
     outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
     if outlier_method == "Z-Score Method":
-        z_scores = stats.zscore(df.select_dtypes(include=['float64', 'int64']))
-        df = df[(z_scores < 3).all(axis=1)]
-        st.write("Data after Z-Score Outlier Removal:", df.head())
+        z_scores = stats.zscore(data.select_dtypes(include=['float64', 'int64']))
+        data = data[(z_scores < 3).all(axis=1)]
+        st.write("Data after Z-Score Outlier Removal:", data.head())
     elif outlier_method == "IQR Method":
-        Q1 = df.quantile(0.25)
-        Q3 = df.quantile(0.75)
+        Q1 = data.quantile(0.25)
+        Q3 = data.quantile(0.75)
         IQR = Q3 - Q1
-        df = df[~((df < (Q1 - 1.5 * IQR)) | (df > (Q3 + 1.5 * IQR))).any(axis=1)]
-        st.write("Data after IQR Outlier Removal:", df.head())
+        data = data[~((data < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
+        st.write("Data after IQR Outlier Removal:", data.head())
 
     # Handling Imbalanced Data: SMOTE
     imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
     if imbalanced:
-        X = df.drop(columns=["target"])  # Assuming 'target' is the label column
-        y = df["target"]
+        X = data.drop(columns=["target"])  # Assuming 'target' is the label column
+        y = data["target"]
         smote = SMOTE()
         X_resampled, y_resampled = smote.fit_resample(X, y)
         st.write("Data after SMOTE Resampling:", pd.DataFrame(X_resampled).head())
