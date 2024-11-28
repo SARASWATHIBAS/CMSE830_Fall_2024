@@ -101,7 +101,7 @@ if st.session_state.is_filtered:
 
 # Tabs for app sections
 tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
-    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling"]
+    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling","Advanced Data Cleaning and Preprocessing"]
 )
 
 # Data Overview Tab
@@ -392,113 +392,65 @@ with tab7:
             plt.legend()
             st.pyplot(plt)
 
-# Main Streamlit App Structure
-st.title("Advanced Data Cleaning and Preprocessing")
+# Tab 8: Advanced Data Cleaning and Preprocessing
+with tabs[7]:
+    st.subheader("Advanced Data Cleaning and Preprocessing")
 
-# Create a tab for data cleaning and preprocessing
-with st.expander("Click to expand: Advanced Data Cleaning and Preprocessing"):
-    # Display original data info
-    st.write("### Original Data Overview")
-    st.write(f"Rows and Columns: {data.shape}")
-    st.write("First few rows of the dataset:")
-    st.write(data.head())
+    st.write("### Missing Value Analysis")
+    st.write("Below is the missing data summary for the dataset:")
+    missing_data = data.isnull().sum()
+    missing_percentage = (missing_data / len(data)) * 100
+    missing_summary = pd.DataFrame({
+        "Missing Values": missing_data,
+        "Percentage": missing_percentage
+    }).sort_values(by="Percentage", ascending=False)
+    st.write(missing_summary)
 
-    # Remove Duplicates
-    st.write("### Removing Duplicates")
-    data_no_duplicates = data.drop_duplicates()
-    st.write(f"Rows after removing duplicates: {data_no_duplicates.shape[0]}")
-    st.write("Sample after removing duplicates:")
-    st.write(data_no_duplicates.head())
+    st.write("### Imputation Options")
+    imputation_method = st.radio(
+        "Select an imputation method for missing values:",
+        ["Mean Imputation", "KNN Imputation", "Drop Rows"]
+    )
 
-    # Handle Missing Data (Advanced Imputation)
-    st.write("### Handling Missing Data with Imputation")
+    if imputation_method == "Mean Imputation":
+        mean_imputer = SimpleImputer(strategy='mean')
+        data_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        st.write("Missing values have been filled using the mean of each column.")
+    elif imputation_method == "KNN Imputation":
+        knn_imputer = KNNImputer(n_neighbors=5)
+        data_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        st.write("Missing values have been filled using KNN Imputation.")
+    elif imputation_method == "Drop Rows":
+        data_imputed = data.dropna()
+        st.write("Rows with missing values have been dropped.")
 
-    # Impute missing data using KNN (K-Nearest Neighbors)
-    knn_imputer = KNNImputer(n_neighbors=5)
-    data_imputed_knn = pd.DataFrame(knn_imputer.fit_transform(data_no_duplicates.select_dtypes(include=np.number)),
-                                    columns=data_no_duplicates.select_dtypes(include=np.number).columns)
-    data_no_duplicates.update(data_imputed_knn)
+    st.write("### Cleaned Data Preview")
+    st.write(data_imputed.head())
 
-    # Impute categorical columns with the mode (most frequent value)
-    categorical_columns = data_no_duplicates.select_dtypes(include='object').columns.tolist()
-    for col in categorical_columns:
-        mode_value = data_no_duplicates[col].mode()[0]
-        data_no_duplicates[col].fillna(mode_value, inplace=True)
+    st.write("### Complex Data Integration Example")
+    st.markdown(
+        """
+        Complex data integration techniques are essential for merging datasets or enriching the dataset with external data sources.
+        Here, we demonstrate:
+        - Merging the dataset with a simulated external data source.
+        """
+    )
 
-    st.write(f"Rows after imputation: {data_no_duplicates.shape[0]}")
-    st.write("Sample after missing data imputation:")
-    st.write(data_no_duplicates.head())
+    # Example of merging with external simulated data
+    external_data = pd.DataFrame({
+        'Age': sorted(data['Age'].unique()),
+        'Life Expectancy': np.random.randint(70, 85, size=len(data['Age'].unique()))
+    })
 
-    # Outlier Detection using Z-Score Method
-    st.write("### Outlier Detection and Removal (Z-Score Method)")
-    z_scores = np.abs(stats.zscore(data_no_duplicates.select_dtypes(include=np.number)))
-    outliers = (z_scores > 3).all(axis=1)
-    data_no_outliers = data_no_duplicates[~outliers]
-    st.write(f"Rows after outlier removal: {data_no_outliers.shape[0]}")
-    st.write("Sample after outlier removal:")
-    st.write(data_no_outliers.head())
+    merged_data = pd.merge(data, external_data, on='Age', how='left')
 
-    # Feature Scaling (Standardization & Min-Max Scaling)
-    st.write("### Feature Scaling")
-    scaler = StandardScaler()
-    scaled_data = pd.DataFrame(scaler.fit_transform(data_no_outliers.select_dtypes(include=np.number)),
-                               columns=data_no_outliers.select_dtypes(include=np.number).columns)
+    st.write("### Merged Data Preview")
+    st.write(merged_data.head())
 
-    min_max_scaler = MinMaxScaler()
-    scaled_data_min_max = pd.DataFrame(min_max_scaler.fit_transform(data_no_outliers.select_dtypes(include=np.number)),
-                                       columns=data_no_outliers.select_dtypes(include=np.number).columns)
-
-    st.write("Data after scaling (Standardization):")
-    st.write(scaled_data.head())
-
-    st.write("Data after scaling (Min-Max Scaling):")
-    st.write(scaled_data_min_max.head())
-
-    # Visualizations to understand cleaned data
-    st.write("### Visualizations of Cleaned Data")
-
-    # Boxplot for numerical features
-    fig, ax = plt.subplots(figsize=(10, 6))
-    sns.boxplot(data=data_no_outliers.select_dtypes(include=np.number))
-    st.pyplot(fig)
-
-    # Pairwise Scatter Plot of cleaned data
-    fig = px.scatter_matrix(data_no_outliers.select_dtypes(include=np.number),
-                            dimensions=data_no_outliers.select_dtypes(include=np.number).columns,
-                            title="Pairwise Scatter Plot of Cleaned Data")
-    st.plotly_chart(fig)
-
-# Display other sections of the app here (like modeling, etc.)
-# Example of adding another section for clustering or modeling
-
-with st.expander("Click to expand: K-Means Clustering"):
-    st.subheader("K-Means Clustering Analysis")
-
-    # Select features for clustering
-    numerical_features = data_no_outliers.select_dtypes(include=['int64', 'float64']).columns
-    selected_features = st.multiselect("Select Features for Clustering (Choose 2)",
-                                       options=numerical_features, default=["Tumor Size", "Age"])
-
-    if len(selected_features) == 2:  # Ensure exactly two features are selected
-        # Extract selected features for clustering
-        X_clustering = data_no_outliers[selected_features]
-
-        # Apply K-Means clustering
-        kmeans = KMeans(n_clusters=3, random_state=42)
-        data_no_outliers['Cluster'] = kmeans.fit_predict(X_clustering)
-
-        # Create interactive scatter plot using Plotly
-        fig = px.scatter(data_no_outliers, x=selected_features[0], y=selected_features[1],
-                         color='Cluster', title='K-Means Clustering of Selected Features',
-                         labels={selected_features[0]: selected_features[0],
-                                 selected_features[1]: selected_features[1]},
-                         color_continuous_scale=px.colors.sequential.Viridis)
-
-        # Update layout for better display
-        fig.update_traces(marker=dict(size=10, opacity=0.6))
-        fig.update_layout(legend_title_text='Cluster')
-
-        # Display the plot in Streamlit
-        st.plotly_chart(fig)
-    else:
-        st.warning("Please select exactly **two** features for clustering.")
+    st.write("### Next Steps")
+    st.markdown(
+        """
+        - Perform feature engineering on the merged data.
+        - Evaluate how integrated data improves predictive modeling.
+        """
+    )
