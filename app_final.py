@@ -12,6 +12,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
+from streamlit.runtime import stats
 
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
@@ -496,9 +497,21 @@ with tab8:
     # Handling Outliers: Z-Score and IQR Methods
     outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
     if outlier_method == "Z-Score Method":
-        z_scores = stats.zscore(data.select_dtypes(include=['float64', 'int64']))
-        data = data[(z_scores < 3).all(axis=1)]
-        st.write("Data after Z-Score Outlier Removal:", data.head())
+        numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+        if len(numeric_columns) == 0:
+            st.error("No numeric columns available for Z-score calculation.")
+        else:
+            # Handle missing values
+            if df.isnull().sum().any():
+                st.warning("Data contains missing values. Proceeding to handle them.")
+                df = df.dropna()  # You can choose to fill NaN values if needed
+
+            # Z-Score Outlier Removal
+            z_scores = stats.zscore(df[numeric_columns])
+            abs_z_scores = np.abs(z_scores)
+            df_cleaned = df[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
+            st.write("Data after Z-Score Outlier Removal:", df_cleaned.head())
+
     elif outlier_method == "IQR Method":
         Q1 = data.quantile(0.25)
         Q3 = data.quantile(0.75)
