@@ -500,7 +500,7 @@ with tab8:
 
     if outlier_method == "Z-Score Method":
         numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
-        st.write(data[numeric_columns])
+        st.write(data[numeric_columns].dtypes)
         if len(numeric_columns) == 0:
             st.error("No numeric columns available for Z-score calculation.")
         else:
