@@ -100,7 +100,7 @@ if st.session_state.is_filtered:
 
 
 # Tabs for app sections
-tab1, tab2, tab3, tab4, tab5, tab6, tab7= st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling","Advanced Data Cleaning and Preprocessing"]
 )
 
