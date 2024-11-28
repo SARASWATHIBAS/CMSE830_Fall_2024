@@ -113,6 +113,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
 
 # Data Overview Tab
 with tab1:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
     st.header("Data Overview")
 
@@ -155,6 +156,7 @@ with tab1:
 
 # Search Tab with Dropdown for Categorical Variables
 with tab2:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Search Data")
 
     # Select column to search within
@@ -192,6 +194,7 @@ with tab2:
 
 # Correlation Heatmap Tab
 with tab3:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Correlation Heatmap")
     if selected_numeric:
         scaler = StandardScaler()
@@ -207,6 +210,7 @@ with tab3:
 
 # Data Imputation Comparison Tab
 with tab4:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
         # Mean Imputation
@@ -234,6 +238,7 @@ with tab4:
 
 # Min-Max Scaling Tab
 with tab5:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Min-Max Scaling")
     if selected_numeric:
         min_max_scaler = MinMaxScaler()
@@ -246,6 +251,7 @@ with tab5:
 
 # Advanced Visualizations Tab
 with tab6:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Visualizations")
 
     # Select features for dynamic plots
@@ -319,6 +325,7 @@ st.write("### Thank you for using the Breast Cancer Analysis App!")
 # Modeling Tab
 # Modeling Tab
 with tab7:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Modeling Analysis")
 
     st.subheader("K-Means Clustering Analysis")
@@ -401,6 +408,7 @@ with tab7:
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
 with tab8:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
     st.write("### Missing Value Analysis")
