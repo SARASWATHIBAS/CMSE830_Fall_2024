@@ -15,7 +15,7 @@ from sklearn.cluster import KMeans
 from streamlit.runtime import stats
 
 # Load the dataset from GitHub
-url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
+url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20dataset%20.csv"
 
 # Add plain background image
 # Set background image
@@ -63,7 +63,7 @@ data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
 # Sidebar filters
 # Sidebar filters
-st.sidebar.header("Filter Data")
+st.sidebar.header("Filter data")
 
 
 # Multi-select for categorical and numeric features
@@ -119,14 +119,14 @@ if st.session_state.is_filtered:
 
 # Tabs for app sections
 tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
-    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
+    ["data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced data Cleaning and Preprocessing"]
 )
 
-# Data Overview Tab
+# data Overview Tab
 with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
-    st.header("Data Overview")
+    st.header("data Overview")
 
     # Message for Feature Selection
     st.write("### Feature Selection for Analysis")
@@ -138,7 +138,7 @@ with tab1:
     Once selected, you'll be able to explore relationships, perform visualizations, and gain insights from the data!
     """)
     st.markdown("""
-    **Overview of the Breast Cancer Dataset:**
+    **Overview of the Breast Cancer dataset:**
 
     - **Age:** Patient’s age group.
     - **Race:** Racial classification.
@@ -158,17 +158,17 @@ with tab1:
     """)
 
     if selected_categorical:
-        st.write("### Selected Categorical Data")
+        st.write("### Selected Categorical data")
         st.write(data[selected_categorical].describe())
     if selected_numeric:
-        st.write("### Selected Numeric Data")
+        st.write("### Selected Numeric data")
         st.write(data[selected_numeric].describe())
 
 
 # Search Tab with Dropdown for Categorical Variables
 with tab2:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-    st.subheader("Search Data")
+    st.subheader("Search data")
 
     # Select column to search within
     search_column = st.selectbox("Select Column to Search", data.columns)
@@ -219,19 +219,19 @@ with tab3:
     else:
         st.write("Please select numeric columns for the correlation heatmap.")
 
-# Data Imputation Comparison Tab
+# data Imputation Comparison Tab
 with tab4:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
         # Mean Imputation
         mean_imputer = SimpleImputer(strategy='mean')
-        data_mean_imputed = pd.DataFrame(mean_imputer.fit_transform(data[selected_numeric]),
+        data_mean_imputed = pd.dataFrame(mean_imputer.fit_transform(data[selected_numeric]),
                                          columns=selected_numeric)
 
         # KNN Imputation
         knn_imputer = KNNImputer(n_neighbors=5)
-        data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data[selected_numeric]),
+        data_knn_imputed = pd.dataFrame(knn_imputer.fit_transform(data[selected_numeric]),
                                         columns=selected_numeric)
 
         # Show distribution comparisons
@@ -253,7 +253,7 @@ with tab5:
     st.subheader("Min-Max Scaling")
     if selected_numeric:
         min_max_scaler = MinMaxScaler()
-        scaled_data_min_max = pd.DataFrame(min_max_scaler.fit_transform(data[selected_numeric]),
+        scaled_data_min_max = pd.dataFrame(min_max_scaler.fit_transform(data[selected_numeric]),
                                            columns=selected_numeric)
 
         st.write(scaled_data_min_max.head())
@@ -417,16 +417,16 @@ with tab7:
             plt.legend()
             st.pyplot(plt)
 
-# Tab 8: Advanced Data Cleaning and Preprocessing
+# Tab 8: Advanced data Cleaning and Preprocessing
 with tab8:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-    st.subheader("Advanced Data Cleaning and Preprocessing")
+    st.subheader("Advanced data Cleaning and Preprocessing")
 
     st.write("### Missing Value Analysis")
     st.write("Below is the missing data summary for the dataset:")
     missing_data = data.isnull().sum()
     missing_percentage = (missing_data / len(data)) * 100
-    missing_summary = pd.DataFrame({
+    missing_summary = pd.dataFrame({
         "Missing Values": missing_data,
         "Percentage": missing_percentage
     }).sort_values(by="Percentage", ascending=False)
@@ -440,17 +440,17 @@ with tab8:
 
     if imputation_method == "Mean Imputation":
         mean_imputer = SimpleImputer(strategy='mean')
-        data_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        data_imputed = pd.dataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
         st.write("Missing values have been filled using the mean of each column.")
     elif imputation_method == "KNN Imputation":
         knn_imputer = KNNImputer(n_neighbors=5)
-        data_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
+        data_imputed = pd.dataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
         st.write("Missing values have been filled using KNN Imputation.")
     elif imputation_method == "Drop Rows":
         data_imputed = data.dropna()
         st.write("Rows with missing values have been dropped.")
 
-    st.write("### Cleaned Data Preview")
+    st.write("### Cleaned data Preview")
     st.write(data_imputed.head())
 
     # Encoding Categorical Variables
@@ -459,10 +459,10 @@ with tab8:
         label_column = st.selectbox("Select column for Label Encoding", data.select_dtypes(include=['object']).columns)
         label_encoder = LabelEncoder()
         data[label_column] = label_encoder.fit_transform(data[label_column])
-        st.write(f"Label Encoded Data for {label_column}:", data.head())
+        st.write(f"Label Encoded data for {label_column}:", data.head())
     elif encoding_method == "One-Hot Encoding":
         data = pd.get_dummies(data, columns=data.select_dtypes(include=['object']).columns)
-        st.write("One-Hot Encoded Data:", data.head())
+        st.write("One-Hot Encoded data:", data.head())
 
     # Normalization and Scaling
     scale_method = st.selectbox("Choose scaling method", ("Min-Max Scaling", "Standardization", "Robust Scaling"))
@@ -470,17 +470,17 @@ with tab8:
         scaler = MinMaxScaler()
         data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
         data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-        st.write("Min-Max Scaled Data:", data.head())
+        st.write("Min-Max Scaled data:", data.head())
     elif scale_method == "Standardization":
         scaler = StandardScaler()
         data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
         data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-        st.write("Standardized Data:", data.head())
+        st.write("Standardized data:", data.head())
     elif scale_method == "Robust Scaling":
         scaler = RobustScaler()
         data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
         data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-        st.write("Robust Scaled Data:", data.head())
+        st.write("Robust Scaled data:", data.head())
 
     # Feature Engineering: Extracting Date-Time Features
     if "date" in data.columns:
@@ -503,32 +503,32 @@ with tab8:
         else:
             # Handle missing values
             if df.isnull().sum().any():
-                st.warning("Data contains missing values. Proceeding to handle them.")
+                st.warning("data contains missing values. Proceeding to handle them.")
                 df = df.dropna()  # You can choose to fill NaN values if needed
 
             # Z-Score Outlier Removal
             z_scores = stats.zscore(df[numeric_columns])
             abs_z_scores = np.abs(z_scores)
             df_cleaned = df[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
-            st.write("Data after Z-Score Outlier Removal:", df_cleaned.head())
+            st.write("data after Z-Score Outlier Removal:", df_cleaned.head())
 
     elif outlier_method == "IQR Method":
         Q1 = data.quantile(0.25)
         Q3 = data.quantile(0.75)
         IQR = Q3 - Q1
         data = data[~((data < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
-        st.write("Data after IQR Outlier Removal:", data.head())
+        st.write("data after IQR Outlier Removal:", data.head())
 
-    # Handling Imbalanced Data: SMOTE
-    imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
+    # Handling Imbalanced data: SMOTE
+    imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced data")
     if imbalanced:
         X = data.drop(columns=["target"])  # Assuming 'target' is the label column
         y = data["target"]
         smote = SMOTE()
         X_resampled, y_resampled = smote.fit_resample(X, y)
-        st.write("Data after SMOTE Resampling:", pd.DataFrame(X_resampled).head())
+        st.write("data after SMOTE Resampling:", pd.dataFrame(X_resampled).head())
 
-    st.write("### Complex Data Integration Example")
+    st.write("### Complex data Integration Example")
     st.markdown(
         """
         Complex data integration techniques are essential for merging datasets or enriching the dataset with external data sources.
@@ -538,14 +538,14 @@ with tab8:
     )
 
     # Example of merging with external simulated data
-    external_data = pd.DataFrame({
+    external_data = pd.dataFrame({
         'Age': sorted(data['Age'].unique()),
         'Life Expectancy': np.random.randint(70, 85, size=len(data['Age'].unique()))
     })
 
     merged_data = pd.merge(data, external_data, on='Age', how='left')
 
-    st.write("### Merged Data Preview")
+    st.write("### Merged data Preview")
     st.write(merged_data.head())
 
     st.write("### Next Steps")
