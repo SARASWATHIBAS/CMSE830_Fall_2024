@@ -28,8 +28,30 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
+    .tabs-container {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+    }
+    .tabs-container div {
+        display: inline-block;
+        padding: 10px 20px;
+        margin-right: 10px;
+        cursor: pointer;
+        background-color: #f0f0f5;
+        border-radius: 5px;
+        font-weight: bold;
+    }
+    .tabs-container div:hover {
+        background-color: #dcdcdc;
+    }
+    .tabs-container .active {
+        background-color: #4CAF50;
+        color: white;
+    }
     </style>
     """,
+
     unsafe_allow_html=True
 )
 
