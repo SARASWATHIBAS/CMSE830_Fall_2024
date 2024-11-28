@@ -393,7 +393,7 @@ with tab7:
             st.pyplot(plt)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
-with tabs8:
+with tab8:
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
     st.write("### Missing Value Analysis")
