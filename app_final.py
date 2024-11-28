@@ -496,8 +496,11 @@ with tab8:
 
     # Handling Outliers: Z-Score and IQR Methods
     outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
+
+
     if outlier_method == "Z-Score Method":
         numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
+        st.write(data[numeric_columns])
         if len(numeric_columns) == 0:
             st.error("No numeric columns available for Z-score calculation.")
         else:
