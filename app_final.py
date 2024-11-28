@@ -497,20 +497,20 @@ with tab8:
     # Handling Outliers: Z-Score and IQR Methods
     outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
     if outlier_method == "Z-Score Method":
-        numeric_columns = df.select_dtypes(include=['float64', 'int64']).columns
+        numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
         if len(numeric_columns) == 0:
             st.error("No numeric columns available for Z-score calculation.")
         else:
             # Handle missing values
-            if df.isnull().sum().any():
+            if data.isnull().sum().any():
                 st.warning("data contains missing values. Proceeding to handle them.")
-                df = df.dropna()  # You can choose to fill NaN values if needed
+                data = data.dropna()  # You can choose to fill NaN values if needed
 
             # Z-Score Outlier Removal
-            z_scores = stats.zscore(df[numeric_columns])
+            z_scores = stats.zscore(data[numeric_columns])
             abs_z_scores = np.abs(z_scores)
-            df_cleaned = df[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
-            st.write("data after Z-Score Outlier Removal:", df_cleaned.head())
+            data_cleaned = data[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
+            st.write("data after Z-Score Outlier Removal:", data_cleaned.head())
 
     elif outlier_method == "IQR Method":
         Q1 = data.quantile(0.25)
