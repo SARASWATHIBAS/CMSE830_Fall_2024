@@ -28,12 +28,21 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
-     .tab-content {
-            max-height: 600px; /* Adjust the height as per your need */
-            overflow-y: scroll; /* Make the content scrollable */
-            padding-right: 10px; /* Optional: Add padding to prevent content clipping */
+     .streamlit-expanderHeader {
+            overflow-x: auto !important;
+            white-space: nowrap !important;
         }
-   
+        
+        /* Style for the tabs container */
+        .css-1d391kg {
+            display: flex;
+            overflow-x: auto; /* Enable horizontal scrolling */
+            padding-bottom: 10px;
+        }
+
+        /* Style for individual tab headers */
+        .css-1w3xx1c {
+            flex-shrink: 0;
     </style>
     """,
 
