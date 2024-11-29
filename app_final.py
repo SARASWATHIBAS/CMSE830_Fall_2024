@@ -40,7 +40,7 @@ st.markdown(
         }
         
         .stTabs [data-baseweb="tab"] {
-            min-width: 150px;
+            min-width: 200px;
             font-size: 14px;
             padding: 5px 10px;
             background-color: #f0f2f6;
