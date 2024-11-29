@@ -137,43 +137,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9= st.tabs(
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
-
-# Render custom tabs
-st.markdown('<div class="scrolling-tabs">', unsafe_allow_html=True)
-for tab in tabs:
-    active_class = "active" if st.session_state.active_tab == tab else ""
-    st.markdown(
-        f'<div class="tab-item {active_class}" onclick="document.querySelectorAll(\'.tab-item\').forEach(e => e.classList.remove(\'active\')); this.classList.add(\'active\'); window.parent.postMessage({{\'action\': \'set-active-tab\', \'value\': \'{tab}\'}}, \'*\')">{tab}</div>',
-        unsafe_allow_html=True,
-    )
-st.markdown('</div>', unsafe_allow_html=True)
-
-# JavaScript to handle tab click events
-st.markdown("""
-    <script>
-    const tabs = [...document.querySelectorAll('.tab-item')];
-    tabs.forEach(tab => {
-        tab.addEventListener('click', () => {
-            const tabName = tab.innerText;
-            window.parent.postMessage({'action': 'set-active-tab', 'value': tabName}, '*');
-        });
-    });
-    </script>
-""", unsafe_allow_html=True)
-
-# Display content for the active tab
-if st.session_state.active_tab == "Correlation Heatmap":
-    st.write("Correlation Heatmap Content")
-elif st.session_state.active_tab == "Imputation Comparison":
-    st.write("Imputation Comparison Content")
-elif st.session_state.active_tab == "Scaling":
-    st.write("Scaling Content")
-elif st.session_state.active_tab == "Visualizations":
-    st.write("Visualizations Content")
-elif st.session_state.active_tab == "Modeling":
-    st.write("Modeling Content")
-elif st.session_state.active_tab == "Advanced Data Cleaning and Preprocessing":
-    st.write("Advanced Data Cleaning and Preprocessing Content")
+    
 # Data Overview Tab
 with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
