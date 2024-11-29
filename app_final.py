@@ -521,7 +521,7 @@ with tab8:
         Q1 = data[numeric_columns].quantile(0.25)
         Q3 = data[numeric_columns].quantile(0.75)
         IQR = Q3 - Q1
-        filtered_data = data[numeric_columns][~((data[numeric_columns] < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
+        filtered_data = data[numeric_columns][~((data[numeric_columns] < (Q1 - 1.5 * IQR)) | (data[numeric_columns] > (Q3 + 1.5 * IQR))).any(axis=1)]
         st.write("Data after IQR Outlier Removal:", filtered_data.head())
 
     # Handling Imbalanced Data: SMOTE
