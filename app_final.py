@@ -501,7 +501,7 @@ with tab8:
 
     if outlier_method == "Z-Score Method":
         numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
-        st.write(data[numeric_columns].dtypes)
+
         if len(numeric_columns) == 0:
             st.error("No numeric columns available for Z-score calculation.")
         else:
@@ -526,11 +526,28 @@ with tab8:
     # Handling Imbalanced Data: SMOTE
     imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
     if imbalanced:
-        X = data.drop(columns=["target"])  # Assuming 'target' is the label column
-        y = data["target"]
-        smote = SMOTE()
-        X_resampled, y_resampled = smote.fit_resample(X, y)
-        st.write("Data after SMOTE Resampling:", pd.DataFrame(X_resampled).head())
+        num_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=3)
+        kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+        cluster_labels = kmeans.fit_predict(scaled_data)
+
+        # Add cluster labels to the dataset
+        data["Cluster"] = cluster_labels
+        st.write("Data with Cluster Labels:", data.head())
+
+        # Balance clusters (if needed)
+        cluster_counts = data["Cluster"].value_counts()
+        st.write("Cluster Counts Before Balancing:", cluster_counts)
+
+        # Resampling logic: Duplicate rows from smaller clusters
+        max_cluster_size = cluster_counts.max()
+        balanced_data = pd.concat(
+            [data[data["Cluster"] == cluster].sample(max_cluster_size, replace=True, random_state=42)
+             for cluster in data["Cluster"].unique()],
+            axis=0
+        )
+
+        st.write("Balanced Data After Resampling:")
+        st.write(balanced_data)
 
     st.write("### Complex Data Integration Example")
     st.markdown(
