@@ -31,31 +31,29 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
-    div[data-testid="stHorizontalBlock"] {
-            overflow-x: scroll;
-            white-space: nowrap;
-            flex-wrap: nowrap;
-            padding-bottom: 10px;
-        }
-        
-    div[data-testid="stHorizontalBlock"] > div {
-            min-width: auto !important;
-            flex-shrink: 0 !important;
-    }
-        
     .stTabs [data-baseweb="tab-list"] {
-            gap: 2px;
+            gap: 8px;
             overflow-x: scroll;
             scrollbar-width: thin;
-    }
+            padding: 5px 5px;
+            margin-bottom: 10px;
+        }
         
         .stTabs [data-baseweb="tab"] {
-            min-width: 130px;
-            flex: unset !important;
+            min-width: 150px;
+            font-size: 14px;
+            padding: 5px 10px;
+            background-color: #f0f2f6;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+        
+        .stTabs [data-baseweb="tab"]:hover {
+            background-color: #e0e2e6;
         }
         
         .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
-            height: 8px;
+            height: 6px;
         }
         
         .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-track {
@@ -66,10 +64,7 @@ st.markdown(
         .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
             background: #888;
             border-radius: 4px;
-        }
         
-        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb:hover {
-            background: #555;
         }
     
     </style>
