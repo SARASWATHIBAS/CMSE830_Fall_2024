@@ -38,16 +38,16 @@ st.markdown(
             padding-bottom: 10px;
         }
         
-        div[data-testid="stHorizontalBlock"] > div {
+    div[data-testid="stHorizontalBlock"] > div {
             min-width: auto !important;
             flex-shrink: 0 !important;
-        }
+    }
         
-        .stTabs [data-baseweb="tab-list"] {
+    .stTabs [data-baseweb="tab-list"] {
             gap: 2px;
             overflow-x: scroll;
             scrollbar-width: thin;
-        }
+    }
         
         .stTabs [data-baseweb="tab"] {
             min-width: 130px;
@@ -75,7 +75,7 @@ st.markdown(
     </style>
     """,
 
-    unsafe_allow_html=True
+  unsafe_allow_html=True
 )
 
 st.title("Breast Cancer Analysis App")
@@ -146,7 +146,7 @@ if st.session_state.is_filtered:
 
 # Create tabs with descriptive names
 tabs = st.tabs([
-     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"]
+     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"
 ])
 
 # Assign tabs to variables
