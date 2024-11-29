@@ -146,7 +146,7 @@ if st.session_state.is_filtered:
 
 # Create tabs with descriptive names
 tabs = st.tabs([
-     "Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"
+     "Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning Preprocessing","Advanced Data Analysis"
 ])
 
 # Assign tabs to variables
