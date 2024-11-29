@@ -517,11 +517,12 @@ with tab8:
             st.write("Data after Z-Score Outlier Removal:", data_cleaned.head())
 
     elif outlier_method == "IQR Method":
-        Q1 = data.quantile(0.25)
-        Q3 = data.quantile(0.75)
+        numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
+        Q1 = data[numeric_columns].quantile(0.25)
+        Q3 = data[numeric_columns].quantile(0.75)
         IQR = Q3 - Q1
-        data = data[~((data < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
-        st.write("Data after IQR Outlier Removal:", data.head())
+        filtered_data = data[numeric_columns][~((data[numeric_columns] < (Q1 - 1.5 * IQR)) | (data > (Q3 + 1.5 * IQR))).any(axis=1)]
+        st.write("Data after IQR Outlier Removal:", filtered_data.head())
 
     # Handling Imbalanced Data: SMOTE
     imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
