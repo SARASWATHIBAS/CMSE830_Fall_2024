@@ -131,14 +131,12 @@ if st.session_state.is_filtered:
 
 
 # Tabs for app sections
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
-    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9= st.tabs(
+    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"]
 )
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
-
-tabs =  ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
 
 # Render custom tabs
 st.markdown('<div class="scrolling-tabs">', unsafe_allow_html=True)
@@ -630,3 +628,130 @@ with tab8:
         - Evaluate how integrated data improves predictive modeling.
         """
     )
+
+    # Advanced Data Cleaning and EDA Tab
+    with tab9:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        st.header("Advanced Data Analysis & Preprocessing")
+
+        # 1. Data Quality Analysis
+        st.subheader("1. Data Quality Overview")
+
+        # Missing value analysis
+        missing_data = data.isnull().sum()
+        missing_percent = (missing_data / len(data)) * 100
+
+        quality_df = pd.DataFrame({
+            'Missing Values': missing_data,
+            'Missing Percentage': missing_percent,
+            'Data Type': data.dtypes
+        })
+
+        st.write(quality_df)
+
+        # 2. Statistical Analysis
+        st.subheader("2. Statistical Analysis")
+
+        # Numeric columns analysis
+        numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns
+
+        if st.checkbox("Show Detailed Statistical Analysis"):
+            stats_df = data[numeric_cols].agg([
+                'mean', 'median', 'std', 'min', 'max',
+                lambda x: x.quantile(0.25),
+                lambda x: x.quantile(0.75),
+                'skew', 'kurtosis'
+            ]).round(2)
+
+            stats_df.index = ['Mean', 'Median', 'Std Dev', 'Min', 'Max',
+                              '25th Percentile', '75th Percentile',
+                              'Skewness', 'Kurtosis']
+            st.write(stats_df)
+
+        # 3. Advanced Visualizations
+        st.subheader("3. Advanced Visualizations")
+
+        # Visualization 1: Distribution Analysis
+        if st.checkbox("Show Distribution Analysis"):
+            selected_num_col = st.selectbox("Select Column for Distribution", numeric_cols)
+
+            fig = make_subplots(rows=2, cols=1,
+                                subplot_titles=('Distribution Plot', 'Box Plot'))
+
+            # Add histogram
+            fig.add_trace(
+                go.Histogram(x=data[selected_num_col], name="Distribution"),
+                row=1, col=1
+            )
+
+            # Add box plot
+            fig.add_trace(
+                go.Box(x=data[selected_num_col], name="Box Plot"),
+                row=2, col=1
+            )
+
+            fig.update_layout(height=800, title_text=f"Distribution Analysis of {selected_num_col}")
+            st.plotly_chart(fig)
+
+        # Visualization 2: Time Series Analysis
+        if st.checkbox("Show Survival Analysis"):
+            fig = px.line(data.groupby('Age')['Survival Months'].mean().reset_index(),
+                          x='Age', y='Survival Months',
+                          title='Average Survival Months by Age')
+            st.plotly_chart(fig)
+
+        # Visualization 3: Feature Relationships
+        if st.checkbox("Show Feature Relationships"):
+            selected_features = st.multiselect("Select Features for Analysis",
+                                               numeric_cols,
+                                               default=numeric_cols[:3])
+
+            if len(selected_features) > 0:
+                correlation_matrix = data[selected_features].corr()
+
+                fig = px.imshow(correlation_matrix,
+                                labels=dict(color="Correlation"),
+                                x=correlation_matrix.columns,
+                                y=correlation_matrix.columns,
+                                color_continuous_scale='RdBu')
+
+                st.plotly_chart(fig)
+
+        # Visualization 4: Categorical Analysis
+        if st.checkbox("Show Categorical Analysis"):
+            categorical_cols = data.select_dtypes(include=['object']).columns
+            selected_cat = st.selectbox("Select Categorical Feature", categorical_cols)
+
+            fig = px.pie(data[selected_cat].value_counts().reset_index(),
+                         values=selected_cat,
+                         names='index',
+                         title=f'Distribution of {selected_cat}')
+            st.plotly_chart(fig)
+
+        # Visualization 5: Bivariate Analysis
+        if st.checkbox("Show Bivariate Analysis"):
+            num_col = st.selectbox("Select Numeric Feature", numeric_cols, key='bivar_num')
+            cat_col = st.selectbox("Select Categorical Feature", categorical_cols, key='bivar_cat')
+
+            fig = px.violin(data, x=cat_col, y=num_col,
+                            box=True, points="all",
+                            title=f'Distribution of {num_col} across {cat_col}')
+            st.plotly_chart(fig)
+
+        # 4. Outlier Detection
+        st.subheader("4. Outlier Detection")
+
+        if st.checkbox("Show Outlier Analysis"):
+            selected_col = st.selectbox("Select Column for Outlier Detection", numeric_cols)
+
+            Q1 = data[selected_col].quantile(0.25)
+            Q3 = data[selected_col].quantile(0.75)
+            IQR = Q3 - Q1
+            outliers = data[(data[selected_col] < (Q1 - 1.5 * IQR)) |
+                            (data[selected_col] > (Q3 + 1.5 * IQR))]
+
+            st.write(f"Number of outliers detected: {len(outliers)}")
+
+            fig = px.box(data, y=selected_col,
+                         title=f'Outlier Analysis for {selected_col}')
+            st.plotly_chart(fig)
