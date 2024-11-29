@@ -131,12 +131,14 @@ if st.session_state.is_filtered:
 
 
 # Tabs for app sections
-tabs= st.tabs(
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
 )
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
-    st.session_state.active_tab = tabs[0]
+    st.session_state.active_tab = tab1
+
+tabs =  ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
 
 # Render custom tabs
 st.markdown('<div class="scrolling-tabs">', unsafe_allow_html=True)
@@ -175,7 +177,7 @@ elif st.session_state.active_tab == "Modeling":
 elif st.session_state.active_tab == "Advanced Data Cleaning and Preprocessing":
     st.write("Advanced Data Cleaning and Preprocessing Content")
 # Data Overview Tab
-with tab[0]:
+with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
     st.header("Data Overview")
@@ -218,7 +220,7 @@ with tab[0]:
 
 
 # Search Tab with Dropdown for Categorical Variables
-with tab[1]:
+with tab2:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Search Data")
 
@@ -256,7 +258,7 @@ with tab[1]:
     st.write("Thank you for using the Breast Cancer Analysis App!")
 
 # Correlation Heatmap Tab
-with tab[2]:
+with tab3:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Correlation Heatmap")
     if selected_numeric:
@@ -272,7 +274,7 @@ with tab[2]:
         st.write("Please select numeric columns for the correlation heatmap.")
 
 # Data Imputation Comparison Tab
-with tab[3]:
+with tab4:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
@@ -300,7 +302,7 @@ with tab[3]:
         st.write("Please select numeric columns for imputation comparison.")
 
 # Min-Max Scaling Tab
-with tab[4]:
+with tab5:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Min-Max Scaling")
     if selected_numeric:
@@ -313,7 +315,7 @@ with tab[4]:
         st.write("Please select numeric columns for min-max scaling.")
 
 # Advanced Visualizations Tab
-with tab[5]:
+with tab6:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Visualizations")
 
@@ -387,7 +389,7 @@ st.write("### Thank you for using the Breast Cancer Analysis App!")
 
 # Modeling Tab
 # Modeling Tab
-with tab[6]:
+with tab7:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Modeling Analysis")
 
@@ -470,7 +472,7 @@ with tab[6]:
             st.pyplot(plt)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
-with tab[7]:
+with tab8:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
