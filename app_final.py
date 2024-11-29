@@ -31,33 +31,17 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
-     .scrolling-tabs {
-        display: flex;
-        overflow-x: auto;
-        white-space: nowrap;
-        scrollbar-width: thin;
-        gap: 1rem;
+    .stTabs [data-baseweb="tab-list"] {
+            gap: 2px;
+            overflow-x: auto;
+            white-space: nowrap;
+            padding-bottom: 10px;
     }
-    .scrolling-tabs::-webkit-scrollbar {
-        height: 6px;
+    .stTabs [data-baseweb="tab"] {
+            white-space: nowrap;
+            min-width: fit-content;
     }
-    .scrolling-tabs::-webkit-scrollbar-thumb {
-        background: #888;
-        border-radius: 4px;
-    }
-    .tab-item {
-        padding: 8px 12px;
-        cursor: pointer;
-        border: 1px solid #ccc;
-        border-radius: 5px;
-        background-color: #f9f9f9;
-        user-select: none;
-    }
-    .tab-item.active {
-        color: white;
-        background-color: #007bff;
-        border-color: #007bff;
-    }
+    
     </style>
     """,
 
@@ -137,7 +121,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9= st.tabs(
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
-    
+
 # Data Overview Tab
 with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
