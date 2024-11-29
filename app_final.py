@@ -31,21 +31,33 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
-     .streamlit-expanderHeader {
-            overflow-x: auto !important;
-            white-space: nowrap !important;
-        }
-        
-        /* Style for the tabs container */
-        .css-1d391kg {
-            display: flex;
-            overflow-x: auto; /* Enable horizontal scrolling */
-            padding-bottom: 10px;
-        }
-
-        /* Style for individual tab headers */
-        .css-1w3xx1c {
-            flex-shrink: 0;
+     .scrolling-tabs {
+        display: flex;
+        overflow-x: auto;
+        white-space: nowrap;
+        scrollbar-width: thin;
+        gap: 1rem;
+    }
+    .scrolling-tabs::-webkit-scrollbar {
+        height: 6px;
+    }
+    .scrolling-tabs::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 4px;
+    }
+    .tab-item {
+        padding: 8px 12px;
+        cursor: pointer;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+        background-color: #f9f9f9;
+        user-select: none;
+    }
+    .tab-item.active {
+        color: white;
+        background-color: #007bff;
+        border-color: #007bff;
+    }
     </style>
     """,
 
@@ -119,12 +131,51 @@ if st.session_state.is_filtered:
 
 
 # Tabs for app sections
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8= st.tabs(
+tabs= st.tabs(
     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing"]
 )
+# Use a session state to store the active tab
+if "active_tab" not in st.session_state:
+    st.session_state.active_tab = tabs[0]
 
+# Render custom tabs
+st.markdown('<div class="scrolling-tabs">', unsafe_allow_html=True)
+for tab in tabs:
+    active_class = "active" if st.session_state.active_tab == tab else ""
+    st.markdown(
+        f'<div class="tab-item {active_class}" onclick="document.querySelectorAll(\'.tab-item\').forEach(e => e.classList.remove(\'active\')); this.classList.add(\'active\'); window.parent.postMessage({{\'action\': \'set-active-tab\', \'value\': \'{tab}\'}}, \'*\')">{tab}</div>',
+        unsafe_allow_html=True,
+    )
+st.markdown('</div>', unsafe_allow_html=True)
+
+# JavaScript to handle tab click events
+st.markdown("""
+    <script>
+    const tabs = [...document.querySelectorAll('.tab-item')];
+    tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            const tabName = tab.innerText;
+            window.parent.postMessage({'action': 'set-active-tab', 'value': tabName}, '*');
+        });
+    });
+    </script>
+""", unsafe_allow_html=True)
+
+# Display content for the active tab
+if st.session_state.active_tab == "Correlation Heatmap":
+    st.write("Correlation Heatmap Content")
+elif st.session_state.active_tab == "Imputation Comparison":
+    st.write("Imputation Comparison Content")
+elif st.session_state.active_tab == "Scaling":
+    st.write("Scaling Content")
+elif st.session_state.active_tab == "Visualizations":
+    st.write("Visualizations Content")
+elif st.session_state.active_tab == "Modeling":
+    st.write("Modeling Content")
+elif st.session_state.active_tab == "Advanced Data Cleaning and Preprocessing":
+    st.write("Advanced Data Cleaning and Preprocessing Content")
 # Data Overview Tab
-with tab1:
+with tab[0]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
     st.header("Data Overview")
@@ -167,7 +218,7 @@ with tab1:
 
 
 # Search Tab with Dropdown for Categorical Variables
-with tab2:
+with tab[1]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Search Data")
 
@@ -205,7 +256,7 @@ with tab2:
     st.write("Thank you for using the Breast Cancer Analysis App!")
 
 # Correlation Heatmap Tab
-with tab3:
+with tab[2]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Correlation Heatmap")
     if selected_numeric:
@@ -221,7 +272,7 @@ with tab3:
         st.write("Please select numeric columns for the correlation heatmap.")
 
 # Data Imputation Comparison Tab
-with tab4:
+with tab[3]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
@@ -249,7 +300,7 @@ with tab4:
         st.write("Please select numeric columns for imputation comparison.")
 
 # Min-Max Scaling Tab
-with tab5:
+with tab[4]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Min-Max Scaling")
     if selected_numeric:
@@ -262,7 +313,7 @@ with tab5:
         st.write("Please select numeric columns for min-max scaling.")
 
 # Advanced Visualizations Tab
-with tab6:
+with tab[5]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Visualizations")
 
@@ -336,7 +387,7 @@ st.write("### Thank you for using the Breast Cancer Analysis App!")
 
 # Modeling Tab
 # Modeling Tab
-with tab7:
+with tab[6]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Modeling Analysis")
 
@@ -419,7 +470,7 @@ with tab7:
             st.pyplot(plt)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
-with tab8:
+with tab[7]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
