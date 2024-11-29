@@ -1,5 +1,9 @@
 import streamlit as st
 import pandas as pd
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
+import plotly.express as px
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer, SimpleImputer
