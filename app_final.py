@@ -31,16 +31,46 @@ st.markdown(
         padding: 10px; /* Padding */
         font-size: 16px; /* Font size */
     }
-    .stTabs [data-baseweb="tab-list"] {
-            gap: 2px;
-            overflow-x: auto;
+    div[data-testid="stHorizontalBlock"] {
+            overflow-x: scroll;
             white-space: nowrap;
+            flex-wrap: nowrap;
             padding-bottom: 10px;
-    }
-    .stTabs [data-baseweb="tab"] {
-            white-space: nowrap;
-            min-width: fit-content;
-    }
+        }
+        
+        div[data-testid="stHorizontalBlock"] > div {
+            min-width: auto !important;
+            flex-shrink: 0 !important;
+        }
+        
+        .stTabs [data-baseweb="tab-list"] {
+            gap: 2px;
+            overflow-x: scroll;
+            scrollbar-width: thin;
+        }
+        
+        .stTabs [data-baseweb="tab"] {
+            min-width: 130px;
+            flex: unset !important;
+        }
+        
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+            height: 8px;
+        }
+        
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+        
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+        }
+        
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
     
     </style>
     """,
@@ -114,10 +144,14 @@ if st.session_state.is_filtered:
     st.sidebar.write(f"**Numeric Columns:** {', '.join(st.session_state.selected_numeric) if st.session_state.selected_numeric else 'None'}")
 
 
-# Tabs for app sections
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9= st.tabs(
-    ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"]
-)
+# Create tabs with descriptive names
+tabs = st.tabs([
+     ["Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning and Preprocessing","Advanced Data Analysis & Preprocessing"]
+])
+
+# Assign tabs to variables
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9 = tabs
+
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
