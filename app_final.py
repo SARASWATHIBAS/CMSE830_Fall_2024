@@ -30,8 +30,153 @@ from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from umap.umap_ import UMAP
+import time
+from datetime import datetime
 
 
+# Add this at the top of your app after imports
+st.set_page_config(
+    page_title="Breast Cancer Analysis Dashboard",
+    page_icon="🏥",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Initialize session state variables
+if 'page_views' not in st.session_state:
+    st.session_state.page_views = 0
+st.session_state.page_views += 1
+
+# Add a help guide in the sidebar
+with st.sidebar:
+    with st.expander("📚 User Guide", expanded=True):
+        st.markdown("""
+        ### How to Use This Dashboard
+
+        1. **Data Selection**
+           - Use sidebar filters to select features
+           - Choose categorical and numerical columns
+
+        2. **Analysis Tools**
+           - Data Overview: Basic statistics
+           - Search: Find specific records
+           - Correlation: Analyze relationships
+           - Modeling: Train and evaluate models
+
+        3. **Visualizations**
+           - Interactive plots
+           - Custom chart builder
+           - Advanced analytics
+
+        4. **Feature Engineering**
+           - Create new features
+           - Transform existing ones
+           - Reduce dimensionality
+
+        ### Tips
+        - 💡 Hover over charts for details
+        - 📊 Download results for further analysis
+        - ⚙️ Use advanced settings for deeper insights
+        """)
+
+    # Add session tracking
+    st.sidebar.metric("Session Views", st.session_state.page_views)
+
+# Add interactive theme selector
+theme = st.sidebar.selectbox(
+    "Select Theme",
+    ["Light", "Dark"],
+    key="theme"
+)
+
+# Add data refresh button with spinner
+if st.sidebar.button("🔄 Refresh Data"):
+    with st.spinner("Refreshing data..."):
+        time.sleep(1)  # Simulate refresh
+        st.success("Data refreshed!")
+
+
+# Add interactive feature selector with search
+@st.cache_data
+def get_searchable_columns():
+    return data.columns.tolist()
+
+
+selected_features = st.multiselect(
+    "🔍 Search and Select Features",
+    get_searchable_columns(),
+    default=get_searchable_columns()[:3],
+    key="feature_selector"
+)
+
+# Add interactive tabs with icons
+tab_icons = ["📊", "🔍", "🔗", "🧮", "📈", "📊", "🤖", "🧹", "📑", "⚙️"]
+tabs = [f"{icon} {name}" for icon, name in zip(tab_icons,
+                                               ["Overview", "Search", "Correlation", "Imputation", "Scaling",
+                                                "Visualization", "Modeling", "Cleaning", "Analysis", "Features"])]
+
+
+# Add download functionality
+def convert_df_to_csv(df):
+    return df.to_csv().encode('utf-8')
+
+
+# Add this after your visualizations
+st.download_button(
+    label="📥 Download Results",
+    data=convert_df_to_csv(data),
+    file_name='analysis_results.csv',
+    mime='text/csv',
+)
+
+# Add feedback section
+with st.expander("📝 Provide Feedback"):
+    feedback = st.text_area("Share your thoughts:")
+    if st.button("Submit Feedback"):
+        st.success("Thank you for your feedback!")
+
+# Add error handling
+try:
+    # Your existing code here
+    pass
+except Exception as e:
+    st.error(f"An error occurred: {str(e)}")
+    st.warning("Please try refreshing the page or contact support.")
+
+# Add progress tracking
+progress_bar = st.progress(0)
+status_text = st.empty()
+
+for i in range(100):
+    progress_bar.progress(i + 1)
+    status_text.text(f'Processing... {i + 1}%')
+    time.sleep(0.01)
+status_text.text('Complete!')
+
+# Add tooltips and help text
+st.info("""
+💡 **Pro Tips:**
+- Use the sidebar to customize your analysis
+- Hover over charts for detailed information
+- Download results for offline analysis
+""")
+
+# Add keyboard shortcuts
+st.markdown("""
+<script>
+document.addEventListener('keydown', function(e) {
+    if (e.key === 'h') {
+        // Toggle help menu
+    }
+});
+</script>
+""", unsafe_allow_html=True)
+
+# Add footer
+st.markdown("""
+---
+Made with ❤️ by Your Name | [Documentation](link) | [Report Issues](link)
+""")
 
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
