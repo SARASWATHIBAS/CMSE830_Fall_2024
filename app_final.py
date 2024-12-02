@@ -198,7 +198,7 @@ with tab1:
     - **A Stage:** Distant metastasis presence/absence.
     - **Tumor Size:** Size of the tumor in mm.
     - **Estrogen/Progesterone Status:** Hormone receptor status.
-    - **Regional Node Examined/Positive:** Number of nodes examined and found positive.
+    - **reginol Node Examined/Positive:** Number of nodes examined and found positive.
     - **Survival Months:** Months patient survived.
     - **Status:** Patient’s survival status.
 
@@ -398,7 +398,7 @@ with tab7:
         st.write("### Survival Prediction Models")
 
         # Feature Selection
-        X = data[['Age', 'Tumor Size', 'Regional Node Positive']]
+        X = data[['Age', 'Tumor Size', 'reginol Node Positive']]
         y = data['Status']
 
         # Train-Test Split
@@ -485,7 +485,7 @@ with tab7:
         st.write("### Survival Months Prediction")
 
         # Feature and Target Selection
-        X = data[['Age', 'Tumor Size', 'Regional Node Positive']]
+        X = data[['Age', 'Tumor Size', 'reginol Node Positive']]
         y = data['Survival Months']
 
         # Train-Test Split
