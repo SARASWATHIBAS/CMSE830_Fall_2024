@@ -91,6 +91,7 @@ data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 # Sidebar filters
 # Sidebar filters
 st.sidebar.header("Filter Data")
+data_actual=data.copy()
 
 
 # Multi-select for categorical and numeric features
@@ -751,10 +752,10 @@ with tab10:
 
     # Age Groups
     if st.checkbox("Create Age Groups"):
-        age_mean = data['Age'].mean()
-        age_std = data['Age'].std()
+        age_mean = data_actual['Age'].mean()
+        age_std = data_actual['Age'].std()
 
-        actual_age = (data['Age'] * age_std) + age_mean
+        actual_age = (data_actual['Age'] * age_std) + age_mean
 
         data['Age_Group'] = pd.cut(actual_age,
                                    bins=[0, 30, 45, 60, 75, 100],
