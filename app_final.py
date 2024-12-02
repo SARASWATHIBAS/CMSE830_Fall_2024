@@ -757,7 +757,7 @@ with tab10:
 
         actual_age = (data_actual['Age'] * age_std) + age_mean
 
-        data['Age_Group'] = pd.cut(actual_age,
+        data['Age_Group'] = pd.cut(data_actual['Age'],
                                    bins=[0, 30, 45, 60, 75, 100],
                                    labels=['Young', 'Middle', 'Senior', 'Elder', 'Advanced'])
 
@@ -767,7 +767,7 @@ with tab10:
 
         # Original age distribution
         fig.add_trace(
-            go.Histogram(x=data_actual['Age'], name="Age Distribution"),
+            go.Histogram(x=data['Age_Group'], name="Age Distribution"),
             row=1, col=1
         )
 
