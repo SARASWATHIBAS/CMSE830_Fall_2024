@@ -17,6 +17,7 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
+import umap
 
 
 # Load the dataset from GitHub
@@ -145,11 +146,11 @@ if st.session_state.is_filtered:
 
 # Create tabs with descriptive names
 tabs = st.tabs([
-     "Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning Preprocessing","Advanced Data Analysis"
+     "Data Overview","Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling", "Advanced Data Cleaning Preprocessing","Advanced Data Analysis","Data Processing & Feature Engineering"
 ])
 
 # Assign tabs to variables
-tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9 = tabs
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8,tab9,tab10 = tabs
 
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
@@ -740,3 +741,128 @@ with tab8:
             fig = px.box(data, y=selected_col,
                          title=f'Outlier Analysis for {selected_col}')
             st.plotly_chart(fig)
+# Feature Engineering Tab
+with tab10:
+    st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+    st.header("Data Processing & Feature Engineering")
+
+    # 1. Feature Creation Section
+    st.subheader("1. Feature Creation")
+
+    # Age Groups
+    if st.checkbox("Create Age Groups"):
+        data['Age_Group'] = pd.cut(data['Age'],
+                                   bins=[0, 30, 45, 60, 75, 100],
+                                   labels=['Young', 'Middle', 'Senior', 'Elder', 'Advanced'])
+        st.write("Age Groups Distribution:")
+        st.write(data['Age_Group'].value_counts())
+
+    # Survival Risk Score
+    if st.checkbox("Generate Survival Risk Score"):
+        data['Risk_Score'] = (
+                data['Tumor Size'] * 0.3 +
+                data['Regional Node Positive'] * 0.4 +
+                data['Age'] * 0.3
+        ).round(2)
+
+        fig = px.histogram(data, x='Risk_Score',
+                           title='Distribution of Risk Scores',
+                           nbins=30)
+        st.plotly_chart(fig)
+
+    # 2. Feature Transformation
+    st.subheader("2. Advanced Transformations")
+
+    transform_type = st.selectbox(
+        "Select Transformation Method",
+        ["Log Transform", "Box-Cox", "Yeo-Johnson", "Quantile"]
+    )
+
+    numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+    selected_col = st.selectbox("Select Column for Transformation", numeric_cols)
+
+    if transform_type and selected_col:
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=('Original Distribution', 'Transformed Distribution'))
+
+        # Original Distribution
+        fig.add_trace(
+            go.Histogram(x=data[selected_col], name="Original"),
+            row=1, col=1
+        )
+
+        # Transform data based on selection
+        if transform_type == "Log Transform":
+            transformed_data = np.log1p(data[selected_col])
+        elif transform_type == "Box-Cox":
+            transformed_data = stats.boxcox(data[selected_col] + 1)[0]
+        elif transform_type == "Yeo-Johnson":
+            transformed_data = stats.yeojohnson(data[selected_col])[0]
+        else:  # Quantile
+            transformer = QuantileTransformer(output_distribution='normal')
+            transformed_data = transformer.fit_transform(data[selected_col].values.reshape(-1, 1)).flatten()
+
+        # Transformed Distribution
+        fig.add_trace(
+            go.Histogram(x=transformed_data, name="Transformed"),
+            row=1, col=2
+        )
+
+        fig.update_layout(height=400, title_text=f"{transform_type} Transformation")
+        st.plotly_chart(fig)
+
+    # 3. Feature Interactions
+    st.subheader("3. Feature Interactions")
+
+    if st.checkbox("Generate Interaction Features"):
+        selected_features = st.multiselect(
+            "Select Features for Interaction",
+            numeric_cols,
+            default=numeric_cols[:2]
+        )
+
+        if len(selected_features) >= 2:
+            # Multiplication Interaction
+            data[f'{selected_features[0]}_{selected_features[1]}_interaction'] = (
+                    data[selected_features[0]] * data[selected_features[1]]
+            )
+
+            # Ratio Interaction
+            data[f'{selected_features[0]}_{selected_features[1]}_ratio'] = (
+                    data[selected_features[0]] / (data[selected_features[1]] + 1)
+            )
+
+            st.write("New Interaction Features:")
+            st.write(data[[f'{selected_features[0]}_{selected_features[1]}_interaction',
+                           f'{selected_features[0]}_{selected_features[1]}_ratio']].describe())
+
+    # 4. Dimensionality Reduction
+    st.subheader("4. Dimensionality Reduction")
+
+    dim_reduction = st.selectbox(
+        "Select Dimensionality Reduction Method",
+        ["PCA", "t-SNE", "UMAP"]
+    )
+
+    if st.checkbox("Apply Dimensionality Reduction"):
+        # Prepare numeric data
+        X = data[numeric_cols].fillna(0)
+
+        if dim_reduction == "PCA":
+            reducer = PCA(n_components=2)
+            reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+        elif dim_reduction == "t-SNE":
+            reducer = TSNE(n_components=2, random_state=42)
+            reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+        else:  # UMAP
+            reducer = umap.UMAP(random_state=42)
+            reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+
+        # Visualization
+        fig = px.scatter(
+            x=reduced_data[:, 0], y=reduced_data[:, 1],
+            color=data['Status'],
+            title=f'{dim_reduction} Visualization'
+        )
+        st.plotly_chart(fig)
+
