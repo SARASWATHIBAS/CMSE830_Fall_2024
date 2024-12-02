@@ -703,9 +703,12 @@ with tab8:
             categorical_cols = data.select_dtypes(include=['object']).columns
             selected_cat = st.selectbox("Select Categorical Feature", categorical_cols)
 
-            fig = px.pie(data[selected_cat].value_counts().reset_index(),
-                         values=selected_cat,
-                         names='index',
+            value_counts = data[selected_cat].value_counts().reset_index()
+            value_counts.columns = ['Category', 'Count']
+
+            fig = px.pie(value_counts,
+                         values='Count',
+                         names='Category',
                          title=f'Distribution of {selected_cat}')
             st.plotly_chart(fig)
 
