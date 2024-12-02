@@ -751,11 +751,34 @@ with tab10:
 
     # Age Groups
     if st.checkbox("Create Age Groups"):
-        data['Age_Group'] = pd.cut(data['Age'],
+        age_mean = data['Age'].mean()
+        age_std = data['Age'].std()
+
+        actual_age = (data['Age'] * age_std) + age_mean
+
+        data['Age_Group'] = pd.cut(actual_age,
                                    bins=[0, 30, 45, 60, 75, 100],
                                    labels=['Young', 'Middle', 'Senior', 'Elder', 'Advanced'])
-        st.write("Age Groups Distribution:")
-        st.write(data['Age_Group'].value_counts())
+
+        # Visualize age distribution with calculated statistics
+        fig = make_subplots(rows=1, cols=2,
+                            subplot_titles=('Age Distribution', 'Age Groups'))
+
+        # Original age distribution
+        fig.add_trace(
+            go.Histogram(x=actual_age, name="Age Distribution"),
+            row=1, col=1
+        )
+
+        # Age groups distribution
+        age_group_counts = data['Age_Group'].value_counts()
+        fig.add_trace(
+            go.Bar(x=age_group_counts.index, y=age_group_counts.values, name="Age Groups"),
+            row=1, col=2
+        )
+
+        fig.update_layout(height=400, title_text="Age Analysis")
+        st.plotly_chart(fig)
 
     # Survival Risk Score
     if st.checkbox("Generate Survival Risk Score"):
