@@ -3,6 +3,9 @@ import pandas as pd
 from plotly.subplots import make_subplots
 import plotly.graph_objects as go
 import plotly.express as px
+from sklearn.preprocessing import QuantileTransformer
+from sklearn.decomposition import PCA
+from sklearn.manifold import TSNE
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -840,7 +843,7 @@ with tab10:
 
     if st.checkbox("Generate Interaction Features"):
         selected_features = st.multiselect(
-            "Select Features for Interaction",
+            "Select 2 Features for Interaction",
             numeric_cols,
             default=numeric_cols[:2]
         )
