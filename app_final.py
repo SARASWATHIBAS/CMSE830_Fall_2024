@@ -491,8 +491,9 @@ with tab8:
     if encoding_method == "Label Encoding":
         label_column = st.selectbox("Select column for Label Encoding", data.select_dtypes(include=['object']).columns)
         label_encoder = LabelEncoder()
-        data[label_column] = label_encoder.fit_transform(data[label_column])
-        st.write(f"Label Encoded Data for {label_column}:", data.head())
+        data_encoded=data
+        data_encoded[label_column] = label_encoder.fit_transform(data[label_column])
+        st.write(f"Label Encoded Data for {label_column}:", data_encoded.head())
     elif encoding_method == "One-Hot Encoding":
         data = pd.get_dummies(data, columns=data.select_dtypes(include=['object']).columns)
         st.write("One-Hot Encoded Data:", data.head())
