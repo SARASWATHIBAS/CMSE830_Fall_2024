@@ -767,12 +767,12 @@ with tab10:
 
         # Original age distribution
         fig.add_trace(
-            go.Histogram(x=actual_age, name="Age Distribution"),
+            go.Histogram(x=data_actual['Age'], name="Age Distribution"),
             row=1, col=1
         )
 
         # Age groups distribution
-        age_group_counts = data['Age_Group'].value_counts()
+        age_group_counts = data_actual['Age'].value_counts()
         fig.add_trace(
             go.Bar(x=age_group_counts.index, y=age_group_counts.values, name="Age Groups"),
             row=1, col=2
