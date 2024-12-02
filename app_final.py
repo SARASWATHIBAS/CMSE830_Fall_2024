@@ -89,6 +89,15 @@ theme = st.sidebar.selectbox(
     key="theme"
 )
 
+try:
+    data = pd.read_csv(url)
+except Exception as e:
+    st.error(f"Error loading data: {e}")
+
+# Remove any unnamed columns
+data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+
+
 # Add data refresh button with spinner
 if st.sidebar.button("🔄 Refresh Data"):
     with st.spinner("Refreshing data..."):
@@ -113,7 +122,7 @@ selected_features = st.multiselect(
 tab_icons = ["📊", "🔍", "🔗", "🧮", "📈", "📊", "🤖", "🧹", "📑", "⚙️"]
 tabs = [f"{icon} {name}" for icon, name in zip(tab_icons,
                                                ["Overview", "Search", "Correlation", "Imputation", "Scaling",
-                                                "Visualization", "Modeling", "Cleaning", "Analysis", "Features"])]
+                                                "Visualization", "Modeling", "Advanced Cleaning", "Analysis", "Features"])]
 
 
 # Add download functionality
@@ -238,13 +247,6 @@ st.markdown(
 
 st.title("Breast Cancer Analysis App")
 
-try:
-    data = pd.read_csv(url)
-except Exception as e:
-    st.error(f"Error loading data: {e}")
-
-# Remove any unnamed columns
-data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
 # Sidebar filters
 # Sidebar filters
