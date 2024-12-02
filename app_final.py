@@ -7,6 +7,15 @@ from sklearn.preprocessing import QuantileTransformer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
 
+from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
+from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
+from sklearn.metrics import silhouette_score
+from sklearn.model_selection import learning_curve
+from xgboost import XGBClassifier, XGBRegressor
+
+
 import seaborn as sns
 import matplotlib.pyplot as plt
 from sklearn.impute import KNNImputer, SimpleImputer
@@ -373,88 +382,150 @@ with tab6:
 st.write("### Thank you for using the Breast Cancer Analysis App!")
 
 # Modeling Tab
-# Modeling Tab
 with tab7:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-    st.subheader("Modeling Analysis")
+    st.header("Model Development & Evaluation")
 
-    st.subheader("K-Means Clustering Analysis")
+    # Model Selection Section
+    st.subheader("1. Model Selection")
+    model_type = st.selectbox(
+        "Select Model Type",
+        ["Classification", "Clustering", "Regression"]
+    )
 
-    # User selects features for clustering
-    numerical_features = data.select_dtypes(include=['int64', 'float64']).columns
-    selected_features = st.multiselect("Select Features for Clustering (Choose 2)",
-                                       options=numerical_features, default=["Tumor Size", "Age"])
+    if model_type == "Classification":
+        # Classification Models
+        st.write("### Survival Prediction Models")
 
-    if len(selected_features) == 2:  # Ensure exactly two features are selected
-        # Extract selected features for clustering
+        # Feature Selection
+        X = data[['Age', 'Tumor Size', 'Regional Node Positive']]
+        y = data['Status']
 
-        X_clustering = data[selected_features]
+        # Train-Test Split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-        # Apply K-Means clustering
-        kmeans = KMeans(n_clusters=3, random_state=42)
-        data['Cluster'] = kmeans.fit_predict(X_clustering)
+        # Model Training
+        models = {
+            'Random Forest': RandomForestClassifier(random_state=42),
+            'XGBoost': XGBClassifier(random_state=42),
+            'Logistic Regression': LogisticRegression(random_state=42)
+        }
 
-        # Create interactive scatter plot using Plotly
-        fig = px.scatter(data, x=selected_features[0], y=selected_features[1],
-                         color='Cluster', title='K-Means Clustering of Selected Features',
-                         labels={selected_features[0]: selected_features[0],
-                                 selected_features[1]: selected_features[1]},
-                         color_continuous_scale=px.colors.sequential.Viridis)
+        results = {}
+        for name, model in models.items():
+            model.fit(X_train, y_train)
+            y_pred = model.predict(X_test)
+            results[name] = {
+                'Accuracy': accuracy_score(y_test, y_pred),
+                'Precision': precision_score(y_test, y_pred, average='weighted'),
+                'Recall': recall_score(y_test, y_pred, average='weighted'),
+                'F1': f1_score(y_test, y_pred, average='weighted')
+            }
 
-        # Update layout for better display
-        fig.update_traces(marker=dict(size=10, opacity=0.6))
-        fig.update_layout(legend_title_text='Cluster')
-
-        # Display the plot in Streamlit
+        # Results Visualization
+        results_df = pd.DataFrame(results).T
+        fig = px.bar(results_df, barmode='group',
+                     title='Model Performance Comparison')
         st.plotly_chart(fig)
 
-    else:
-        st.warning("Please select exactly **two** features for clustering.")
-    # Polynomial Regression Analysis
-    if st.checkbox("Perform Polynomial Regression Analysis"):
-        st.subheader("Polynomial Regression Analysis")
+        # Feature Importance
+        if st.checkbox("Show Feature Importance"):
+            rf_model = models['Random Forest']
+            importance_df = pd.DataFrame({
+                'Feature': X.columns,
+                'Importance': rf_model.feature_importances_
+            })
+            fig = px.bar(importance_df, x='Feature', y='Importance',
+                         title='Feature Importance')
+            st.plotly_chart(fig)
 
-        # Select numerical feature
-        selected_numeric_feature = st.selectbox("Choose a Numerical Feature", numeric_filter)
+    elif model_type == "Clustering":
+        st.write("### K-Means Clustering Analysis")
 
-        # Ensure the chosen feature is valid
-        if selected_numeric_feature and 'Survival Months' in data.columns:
-            X = data[[selected_numeric_feature]]
-            y = data['Survival Months']
+        # Feature Selection for Clustering
+        numerical_features = data.select_dtypes(include=['int64', 'float64']).columns
+        selected_features = st.multiselect(
+            "Select Features for Clustering (Choose 2)",
+            options=numerical_features,
+            default=["Tumor Size", "Age"]
+        )
 
+        if len(selected_features) == 2:
+            X_clustering = data[selected_features]
 
-            # Create polynomial features
-            def create_polynomial_data(X, degree=2):
-                poly = PolynomialFeatures(degree=degree)
-                return poly.fit_transform(X)
+            # Elbow Method
+            if st.checkbox("Show Elbow Method"):
+                inertias = []
+                K = range(1, 10)
+                for k in K:
+                    kmeans = KMeans(n_clusters=k, random_state=42)
+                    kmeans.fit(X_clustering)
+                    inertias.append(kmeans.inertia_)
 
+                fig = px.line(x=K, y=inertias,
+                              title='Elbow Method for Optimal k',
+                              labels={'x': 'k', 'y': 'Inertia'})
+                st.plotly_chart(fig)
 
-            # Create polynomial features
-            X_poly = create_polynomial_data(X, degree=2)
+            # K-Means Clustering
+            n_clusters = st.slider("Select Number of Clusters", 2, 8, 3)
+            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
+            data['Cluster'] = kmeans.fit_predict(X_clustering)
 
-            # Split the data into training and testing sets
-            X_train, X_test, y_train, y_test = train_test_split(X_poly, y, test_size=0.2, random_state=42)
+            fig = px.scatter(data, x=selected_features[0], y=selected_features[1],
+                             color='Cluster',
+                             title='K-Means Clustering Results')
+            st.plotly_chart(fig)
 
-            # Fit the polynomial regression model
-            model = LinearRegression()
+            # Silhouette Score
+            silhouette_avg = silhouette_score(X_clustering, data['Cluster'])
+            st.write(f"Silhouette Score: {silhouette_avg:.3f}")
+
+    else:  # Regression
+        st.write("### Survival Months Prediction")
+
+        # Feature and Target Selection
+        X = data[['Age', 'Tumor Size', 'Regional Node Positive']]
+        y = data['Survival Months']
+
+        # Train-Test Split
+        X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
+
+        # Model Training
+        reg_models = {
+            'Linear': LinearRegression(),
+            'Random Forest': RandomForestRegressor(random_state=42),
+            'XGBoost': XGBRegressor(random_state=42)
+        }
+
+        reg_results = {}
+        for name, model in reg_models.items():
             model.fit(X_train, y_train)
-
-            # Make predictions
             y_pred = model.predict(X_test)
+            reg_results[name] = {
+                'R2': r2_score(y_test, y_pred),
+                'MAE': mean_absolute_error(y_test, y_pred),
+                'MSE': mean_squared_error(y_test, y_pred)
+            }
 
-            # Evaluate the model
-            mse = mean_squared_error(y_test, y_pred)
-            st.write(f"Mean Squared Error: {mse:.2f}")
+        # Results Visualization
+        reg_results_df = pd.DataFrame(reg_results).T
+        fig = px.bar(reg_results_df, barmode='group',
+                     title='Regression Model Performance')
+        st.plotly_chart(fig)
 
-            # Plotting true vs predicted values
-            plt.figure(figsize=(10, 6))
-            plt.scatter(X_test[:, 1], y_test, color='blue', label='True Values', alpha=0.5)
-            plt.scatter(X_test[:, 1], y_pred, color='red', label='Predicted Values', alpha=0.5)
-            plt.title(f'True vs Predicted Values for {selected_numeric_feature} vs Survival Months')
-            plt.xlabel(selected_numeric_feature)
-            plt.ylabel('Survival Months')
-            plt.legend()
-            st.pyplot(plt)
+        # Learning Curves
+        if st.checkbox("Show Learning Curves"):
+            selected_model = st.selectbox("Select Model", list(reg_models.keys()))
+            train_sizes, train_scores, test_scores = learning_curve(
+                reg_models[selected_model], X, y, cv=5,
+                train_sizes=np.linspace(0.1, 1.0, 10))
+
+            fig = px.line(x=train_sizes,
+                          y=[train_scores.mean(axis=1), test_scores.mean(axis=1)],
+                          title=f'Learning Curves - {selected_model}',
+                          labels={'x': 'Training Examples', 'y': 'Score'})
+            st.plotly_chart(fig)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
 with tab8:
