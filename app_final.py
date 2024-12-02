@@ -785,7 +785,7 @@ with tab10:
     if st.checkbox("Generate Survival Risk Score"):
         data['Risk_Score'] = (
                 data['Tumor Size'] * 0.3 +
-                data['Regional Node Positive'] * 0.4 +
+                data['Reginol Node Positive'] * 0.4 +
                 data['Age'] * 0.3
         ).round(2)
 
