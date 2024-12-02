@@ -398,7 +398,7 @@ with tab7:
         st.write("### Survival Prediction Models")
 
         # Feature Selection
-        X = data[['Age', 'Tumor Size', 'reginol Node Positive']]
+        X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
         y = data['Status']
 
         # Train-Test Split
@@ -485,7 +485,7 @@ with tab7:
         st.write("### Survival Months Prediction")
 
         # Feature and Target Selection
-        X = data[['Age', 'Tumor Size', 'reginol Node Positive']]
+        X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
         y = data['Survival Months']
 
         # Train-Test Split
