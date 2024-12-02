@@ -20,8 +20,8 @@ from sklearn.preprocessing import PolynomialFeatures
 from sklearn.metrics import mean_squared_error
 from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
-import umap
-import umap.umap_ as umap
+from umap.umap_ import UMAP
+
 
 
 # Load the dataset from GitHub
@@ -882,8 +882,8 @@ with tab10:
         elif dim_reduction == "t-SNE":
             reducer = TSNE(n_components=2, random_state=42)
             reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
-        else:  # UMAP
-            reducer = umap.UMAP(random_state=42)
+        elif dim_reduction == "UMAP":
+            reducer = UMAP(n_components=2, random_state=42)
             reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
 
         # Visualization
