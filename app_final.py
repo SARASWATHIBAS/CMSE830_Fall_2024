@@ -396,10 +396,11 @@ with tab7:
     if model_type == "Classification":
         # Classification Models
         st.write("### Survival Prediction Models")
+        label_encoder = LabelEncoder()
+        y = label_encoder.fit_transform(data['Status'])  # This will convert 'Alive'/'Dead' to 0/1
 
         # Feature Selection
         X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
-        y = data['Status']
 
         # Train-Test Split
         X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
