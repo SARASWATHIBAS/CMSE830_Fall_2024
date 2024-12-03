@@ -100,33 +100,6 @@ def show_documentation():
         - Consider feature relationships before modeling
         """)
 
-
-# Add this function call right after your title
-def main():
-    st.title("Breast Cancer Analysis App")
-    show_documentation()  # Add documentation section
-
-    # Add help tooltips to key elements
-    st.sidebar.markdown("""
-    <div class='tooltip'>
-        ℹ️ Need help with filters? Hover here!
-        <span class='tooltiptext'>
-            Select features to analyze specific aspects of the data.
-            Categorical features are text-based classifications.
-            Numerical features are quantitative measurements.
-        </span>
-    </div>
-    """, unsafe_allow_html=True)
-
-    # Add contextual help for each major section
-    for tab in tabs:
-        with tab:
-            st.info(f"""
-            💡 **Quick Help**: This section allows you to {tab.lower()}.
-            Click the documentation expander above for detailed instructions.
-            """)
-
-
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
@@ -187,6 +160,7 @@ st.markdown(
 
 st.title("Breast Cancer Analysis App")
 
+show_documentation()
 try:
     data = pd.read_csv(url)
 except Exception as e:
