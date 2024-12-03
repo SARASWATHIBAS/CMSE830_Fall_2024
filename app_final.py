@@ -195,19 +195,16 @@ def cache_processed_features(data):
 
     return numeric_cols, categorical_cols
 
-
-# Example usage:
-numeric_cols, categorical_cols = cache_processed_features(data)
-
-# Print results
-st.write("Numeric Features:", numeric_cols)
-st.write("Categorical Features:", categorical_cols)
-
 # Usage in your app:
 data = cache_data(url)
 
 # Remove any unnamed columns
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+numeric_cols, categorical_cols = cache_processed_features(data)
+
+# Print results
+st.write("Numeric Features:", numeric_cols)
+st.write("Categorical Features:", categorical_cols)
 
 # Sidebar filters
 # Sidebar filters
