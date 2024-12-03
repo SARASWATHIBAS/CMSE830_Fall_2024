@@ -167,6 +167,45 @@ show_documentation()
 # except Exception as e:
 #     st.error(f"Error loading data: {e}")
 
+# Data Caching
+@st.cache_data
+def cache_data(url):
+    """Cache the initial dataset loading"""
+    return pd.read_csv(url)
+
+@st.cache_data
+def cache_processed_features(data):
+    """
+    Cache and return processed numeric and categorical features
+
+    Parameters:
+        data (pd.DataFrame): Input dataset
+
+    Returns:
+        tuple: (numeric_columns, categorical_columns)
+    """
+    # Get numeric columns
+    numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns.tolist()
+
+    # Get categorical columns
+    categorical_cols = data.select_dtypes(include=['object', 'category']).columns.tolist()
+
+    # Add additional feature processing if needed
+    # Example: Remove specific columns, rename columns, etc.
+
+    return numeric_cols, categorical_cols
+
+
+# Example usage:
+numeric_cols, categorical_cols = cache_processed_features(data)
+
+# Print results
+st.write("Numeric Features:", numeric_cols)
+st.write("Categorical Features:", categorical_cols)
+
+# Usage in your app:
+data = cache_data(url)
+
 # Remove any unnamed columns
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 
@@ -238,44 +277,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = tabs
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
-# Data Caching
-@st.cache_data
-def cache_data(url):
-    """Cache the initial dataset loading"""
-    return pd.read_csv(url)
 
-@st.cache_data
-def cache_processed_features(data):
-    """
-    Cache and return processed numeric and categorical features
-
-    Parameters:
-        data (pd.DataFrame): Input dataset
-
-    Returns:
-        tuple: (numeric_columns, categorical_columns)
-    """
-    # Get numeric columns
-    numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns.tolist()
-
-    # Get categorical columns
-    categorical_cols = data.select_dtypes(include=['object', 'category']).columns.tolist()
-
-    # Add additional feature processing if needed
-    # Example: Remove specific columns, rename columns, etc.
-
-    return numeric_cols, categorical_cols
-
-
-# Example usage:
-numeric_cols, categorical_cols = cache_processed_features(data)
-
-# Print results
-st.write("Numeric Features:", numeric_cols)
-st.write("Categorical Features:", categorical_cols)
-
-# Usage in your app:
-data = cache_data(url)
 
 # Data Overview Tab
 with tab1:
