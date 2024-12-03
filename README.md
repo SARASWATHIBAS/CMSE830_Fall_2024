@@ -67,13 +67,13 @@ breast-cancer-analysis/ ├── data/ ├── app.py ├── requirements.
 
 
 ## Installation
-''' bash
+``` bash
 git clone https://github.com/username/breast-cancer-analysis
 cd breast-cancer-analysis
 pip install -r requirements.txt
 
 Usage
-streamlit run app.py '''
+streamlit run app.py ```
 
 
 # Contributing Guidelines
