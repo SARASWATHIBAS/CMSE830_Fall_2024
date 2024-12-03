@@ -65,17 +65,6 @@ Advanced analytics tool for breast cancer data visualization and prediction usin
 ## Project Structure
 breast-cancer-analysis/ ├── data/ ├── app.py ├── requirements.txt └── README.md
 
-
-## Installation
-``` bash
-git clone https://github.com/username/breast-cancer-analysis
-cd breast-cancer-analysis
-pip install -r requirements.txt
-
-Usage
-streamlit run app.py ```
-
-
 # Contributing Guidelines
 
 We welcome and appreciate your contributions to the Breast Cancer Analysis project! Here's how you can contribute:
@@ -162,4 +151,13 @@ pip install -r requirements.txt
 - LinkedIn: https://www.linkedin.com/in/saraswathibaskaran/
 
 Join us in making breast cancer analysis more accessible and accurate!
+
+## Installation
+``` bash
+git clone https://github.com/username/breast-cancer-analysis
+cd breast-cancer-analysis
+pip install -r requirements.txt
+
+Usage
+streamlit run app.py
 
