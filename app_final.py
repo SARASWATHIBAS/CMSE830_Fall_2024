@@ -1,155 +1,271 @@
 import streamlit as st
 import pandas as pd
-import numpy as np
+from plotly.subplots import make_subplots
+import plotly.graph_objects as go
 import plotly.express as px
-import seaborn as sns
-import matplotlib.pyplot as plt
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, LabelEncoder
-from sklearn.impute import SimpleImputer, KNNImputer
+from sklearn.preprocessing import QuantileTransformer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
-from umap import UMAP
+
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
-from sklearn.linear_model import LogisticRegression, LinearRegression
-from xgboost import XGBClassifier, XGBRegressor
+from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import accuracy_score, precision_score, recall_score, f1_score
 from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
-from sklearn.model_selection import train_test_split, learning_curve
-from sklearn.cluster import KMeans
 from sklearn.metrics import silhouette_score
+from sklearn.model_selection import learning_curve
+from xgboost import XGBClassifier, XGBRegressor
+
+import seaborn as sns
+import matplotlib.pyplot as plt
+from sklearn.impute import KNNImputer, SimpleImputer
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, RobustScaler, LabelEncoder
+import numpy as np
 from scipy import stats
-from datetime import datetime
-import plotly.graph_objects as go
-from plotly.subplots import make_subplots
-from sklearn.preprocessing import PolynomialFeatures, QuantileTransformer
-
-# Enhanced page configuration
-st.set_page_config(
-    page_title="Breast Cancer Analysis Dashboard",
-    page_icon="🏥",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
-
-# Initialize session state
-if 'page_views' not in st.session_state:
-    st.session_state.page_views = 0
-if 'selected_features' not in st.session_state:
-    st.session_state.selected_features = []
-if 'analysis_history' not in st.session_state:
-    st.session_state.analysis_history = []
-st.session_state.page_views += 1
-
-# Cache the data loading
-@st.cache_data(ttl=3600)
-def load_data():
-    try:
-        url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
-        data = pd.read_csv(url)
-        return data.loc[:, ~data.columns.str.contains('^Unnamed')]
-    except Exception as e:
-        st.error(f"Error loading data: {e}")
-        return None
-
-# Load the data
-data = load_data()
-if data is None:
-    st.stop()
-
-# Store original data
-data_actual = data.copy()
+from imblearn.over_sampling import SMOTE
+import plotly.express as px
+from sklearn.linear_model import LinearRegression
+from sklearn.preprocessing import PolynomialFeatures
+from sklearn.metrics import mean_squared_error
+from sklearn.model_selection import train_test_split
+from sklearn.cluster import KMeans
+from umap.umap_ import UMAP
 
 
-# Interactive User Guide
-def show_user_guide():
-    with st.expander("📚 Interactive User Guide", expanded=True):
+# Add this at the beginning of your app, right after the imports and before the main content
+
+def show_documentation():
+    """Display comprehensive documentation and user guide"""
+    with st.expander("📚 Documentation & User Guide", expanded=False):
         st.markdown("""
-        ### Welcome to the Breast Cancer Analysis Dashboard! 
+        # Breast Cancer Analysis App Documentation
 
-        #### 🎯 Key Features:
+        ## Overview
+        This application provides comprehensive tools for analyzing breast cancer data through various statistical and machine learning approaches.
+
+        ## Key Features
         1. **Data Analysis**
-           - Filter and explore breast cancer data
-           - Visualize patterns and trends
-           - Perform statistical analysis
+           - Data overview and statistics
+           - Missing value analysis
+           - Correlation studies
 
-        2. **Machine Learning**
-           - Train predictive models
-           - Evaluate model performance
-           - Feature importance analysis
+        2. **Visualization Tools**
+           - Interactive plots
+           - Statistical visualizations
+           - Distribution analysis
 
-        3. **Data Processing**
-           - Handle missing values
-           - Scale and normalize data
+        3. **Machine Learning**
+           - Classification models
+           - Clustering analysis
+           - Regression predictions
+
+        4. **Data Processing**
+           - Advanced cleaning
            - Feature engineering
+           - Dimensionality reduction
 
-        #### 🔍 Quick Start:
-        1. Select features in the sidebar
-        2. Choose analysis methods from tabs
-        3. Interact with visualizations
-        4. Export results
+        ## How to Use
+
+        ### 1. Data Selection
+        - Use the sidebar to select features
+        - Choose categorical and numerical columns
+        - Apply filters as needed
+
+        ### 2. Analysis Workflow
+        1. Start with Data Overview
+        2. Perform initial visualizations
+        3. Apply preprocessing steps
+        4. Run machine learning models
+
+        ### 3. Tips for Best Results
+        - Select relevant features for analysis
+        - Check data quality before modeling
+        - Use appropriate scaling methods
+
+        ## Tab Guide
+
+        1. **Data Overview**: Basic statistics and data summary
+        2. **Search**: Find specific data points
+        3. **Correlation**: Analyze feature relationships
+        4. **Imputation**: Handle missing values
+        5. **Scaling**: Normalize data
+        6. **Visualizations**: Create plots
+        7. **Modeling**: Build ML models
+        8. **Advanced Cleaning**: Deep data preprocessing
+        9. **Advanced Analysis**: Complex analytical tools
+        10. **Feature Engineering**: Create new features
+
+        ## Best Practices
+        - Always check data quality first
+        - Use appropriate visualization for your data type
+        - Consider feature relationships before modeling
         """)
 
 
-# Enhanced sidebar
-st.sidebar.title("Analysis Controls")
+# Add this function call right after your title
+def main():
+    st.title("Breast Cancer Analysis App")
+    show_documentation()  # Add documentation section
 
-# Theme selector
-theme = st.sidebar.select_slider(
-    "Dashboard Theme",
-    options=["Light", "Modern", "Dark"],
-    value="Modern"
+    # Add help tooltips to key elements
+    st.sidebar.markdown("""
+    <div class='tooltip'>
+        ℹ️ Need help with filters? Hover here!
+        <span class='tooltiptext'>
+            Select features to analyze specific aspects of the data.
+            Categorical features are text-based classifications.
+            Numerical features are quantitative measurements.
+        </span>
+    </div>
+    """, unsafe_allow_html=True)
+
+    # Add contextual help for each major section
+    for tab in tabs:
+        with tab:
+            st.info(f"""
+            💡 **Quick Help**: This section allows you to {tab.lower()}.
+            Click the documentation expander above for detailed instructions.
+            """)
+
+
+# Load the dataset from GitHub
+url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
+
+# Add plain background image
+# Set background image
+st.markdown(
+    """
+    <style>
+   .stButton > button {
+        background-color: #007BFF; /* Button color */
+        color: white; /* Button text color */
+        border: none; /* Remove border */
+        border-radius: 5px; /* Rounded corners */
+        padding: 10px; /* Padding */
+        font-size: 16px; /* Font size */
+    }
+    .stTabs [data-baseweb="tab-list"] {
+            gap: 8px;
+            overflow-x: scroll;
+            scrollbar-width: thin;
+            padding: 5px 5px;
+            margin-bottom: 10px;
+        }
+
+        .stTabs [data-baseweb="tab"] {
+            min-width: 200px;
+            font-size: 14px;
+            padding: 5px 10px;
+            background-color: #f0f2f6;
+            border-radius: 4px;
+            margin-right: 5px;
+        }
+
+        .stTabs [data-baseweb="tab"]:hover {
+            background-color: #e0e2e6;
+        }
+
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar {
+            height: 6px;
+        }
+
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 4px;
+        }
+
+        .stTabs [data-baseweb="tab-list"]::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 4px;
+
+        }
+
+    </style>
+    """,
+
+    unsafe_allow_html=True
 )
 
-# Feature selection
+st.title("Breast Cancer Analysis App")
+
+try:
+    data = pd.read_csv(url)
+except Exception as e:
+    st.error(f"Error loading data: {e}")
+
+# Remove any unnamed columns
+data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+
+# Sidebar filters
+# Sidebar filters
+st.sidebar.header("Filter Data")
+data_actual = data.copy()
+
+# Multi-select for categorical and numeric features
 categorical_filter = data.select_dtypes(include='object').columns.tolist()
-numeric_filter = data.select_dtypes(include=['float64', 'int64']).columns.tolist()
+numeric_filter = data.select_dtypes(include=np.number).columns.tolist()
 
+# Default selections for categorical and numeric columns
+default_categorical = categorical_filter[:2]  # Select the first 2 categorical columns as default
+default_numeric = numeric_filter[:2]  # Select the first 2 numeric columns as default
+
+# Store selections in session state to maintain state across runs
+if 'selected_categorical' not in st.session_state:
+    st.session_state.selected_categorical = []
+if 'selected_numeric' not in st.session_state:
+    st.session_state.selected_numeric = []
+if 'is_filtered' not in st.session_state:
+    st.session_state.is_filtered = False
+
+# Allow users to reset their selections
+if st.sidebar.button("Reset Filters", key="reset_filters_button"):
+    st.session_state.selected_categorical = []
+    st.session_state.selected_numeric = []
+    st.session_state.is_filtered = False  # Reset the filter state as well
+
+# Multi-select for categorical and numeric columns
 selected_categorical = st.sidebar.multiselect(
-    "Select Categorical Features",
+    "Select Categorical Columns",
     categorical_filter,
-    default=categorical_filter[:2]
+    default=default_categorical,
+    key="categorical_multiselect"
 )
-
 selected_numeric = st.sidebar.multiselect(
-    "Select Numeric Features",
+    "Select Numeric Columns",
     numeric_filter,
-    default=numeric_filter[:2]
+    default=default_numeric,
+    key="numeric_multiselect"
 )
 
-# Analysis history tracker
-if st.sidebar.button("Save Analysis"):
-    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
-    st.session_state.analysis_history.append({
-        'timestamp': timestamp,
-        'features': selected_categorical + selected_numeric,
-        'theme': theme
-    })
+# Add a "Go" button
+if st.sidebar.button("Go", key="go_button"):
+    # Update session state with current selections
+    st.session_state.selected_categorical = selected_categorical
+    st.session_state.selected_numeric = selected_numeric
+    st.session_state.is_filtered = True  # Set filter state to True
 
-# Show analysis history
-if st.sidebar.checkbox("Show History"):
-    for item in st.session_state.analysis_history:
-        st.sidebar.write(f"📅 {item['timestamp']}")
-        st.sidebar.write(f"Features: {', '.join(item['features'])}")
-        st.sidebar.write("---")
+# Notify user of selections
+if st.session_state.is_filtered:
+    st.sidebar.write("### Selected Filters:")
+    st.sidebar.write(
+        f"**Categorical Columns:** {', '.join(st.session_state.selected_categorical) if st.session_state.selected_categorical else 'None'}")
+    st.sidebar.write(
+        f"**Numeric Columns:** {', '.join(st.session_state.selected_numeric) if st.session_state.selected_numeric else 'None'}")
 
-# Reset button
-if st.sidebar.button("Reset All"):
-    st.session_state.clear()
-    st.experimental_rerun()
-
-# Main title and user guide
-st.title("Breast Cancer Analysis Dashboard")
-show_user_guide()
-
-# Create tabs
+# Create tabs with descriptive names
 tabs = st.tabs([
-    "Overview", "Search", "Correlation", "Imputation",
-    "Scaling", "Visualization", "Modeling",
-    "Data Cleaning", "Analysis", "Feature Engineering"
+    "Data Overview", "Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations", "Modeling",
+    "Advanced Data Cleaning Preprocessing", "Advanced Data Analysis", "Data Processing & Feature Engineering"
 ])
 
+# Assign tabs to variables
+tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = tabs
+
+# Use a session state to store the active tab
+if "active_tab" not in st.session_state:
+    st.session_state.active_tab = tab1
+
 # Data Overview Tab
-with tabs[0]:
+with tab1:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
     st.header("Data Overview")
@@ -191,7 +307,7 @@ with tabs[0]:
         st.write(data[selected_numeric].describe())
 
 # Search Tab with Dropdown for Categorical Variables
-with tabs[1]:
+with tab2:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Search Data")
 
@@ -229,7 +345,7 @@ with tabs[1]:
     st.write("Thank you for using the Breast Cancer Analysis App!")
 
 # Correlation Heatmap Tab
-with tabs[2]:
+with tab3:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Correlation Heatmap")
     if selected_numeric:
@@ -245,7 +361,7 @@ with tabs[2]:
         st.write("Please select numeric columns for the correlation heatmap.")
 
 # Data Imputation Comparison Tab
-with tabs[3]:
+with tab4:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
@@ -273,7 +389,7 @@ with tabs[3]:
         st.write("Please select numeric columns for imputation comparison.")
 
 # Min-Max Scaling Tab
-with tabs[4]:
+with tab5:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Min-Max Scaling")
     if selected_numeric:
@@ -286,7 +402,7 @@ with tabs[4]:
         st.write("Please select numeric columns for min-max scaling.")
 
 # Advanced Visualizations Tab
-with tabs[5]:
+with tab6:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Visualizations")
 
@@ -359,7 +475,7 @@ with tabs[5]:
 st.write("### Thank you for using the Breast Cancer Analysis App!")
 
 # Modeling Tab
-with tabs[6]:
+with tab7:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.header("Model Development & Evaluation")
 
@@ -506,7 +622,7 @@ with tabs[6]:
             st.plotly_chart(fig)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
-with tabs[7]:
+with tab8:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
@@ -667,7 +783,7 @@ with tabs[7]:
     )
 
     # Advanced Data Cleaning and EDA Tab
-    with tabs[8]:
+    with tab9:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         st.header("Advanced Data Analysis & Preprocessing")
 
@@ -796,7 +912,7 @@ with tabs[7]:
                          title=f'Outlier Analysis for {selected_col}')
             st.plotly_chart(fig)
 # Feature Engineering Tab
-with tabs[9]:
+with tab10:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.header("Data Processing & Feature Engineering")
 
