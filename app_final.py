@@ -161,6 +161,54 @@ st.markdown(
 st.title("Breast Cancer Analysis App")
 
 show_documentation()
+# Configure page settings first
+st.set_page_config(
+    page_title="Breast Cancer Analysis",
+    page_icon="🏥",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
+
+# Initialize session state
+session_vars = {
+    'data': None,
+    'selected_features': [],
+    'model': None,
+    'predictions': None,
+    'current_tab': 0,
+    'analysis_complete': False
+}
+
+for var, value in session_vars.items():
+    if var not in st.session_state:
+        st.session_state[var] = value
+
+# Load data with caching
+@st.cache_data
+def load_data(url):
+    return pd.read_csv(url)
+
+data = load_data(URL)
+st.session_state.data = data
+
+# Process features with caching
+@st.cache_data
+def process_features(data):
+    numeric_features = data.select_dtypes(include=['float64', 'int64']).columns
+    categorical_features = data.select_dtypes(include=['object']).columns
+    return data, numeric_features, categorical_features
+
+data, numeric_features, categorical_features = process_features(data)
+
+# Add download functionality
+csv = data.to_csv(index=False).encode('utf-8')
+st.download_button(
+    "Download Data",
+    csv,
+    "breast_cancer_analysis.csv",
+    "text/csv",
+    key='download-csv'
+)
 try:
     data = pd.read_csv(url)
 except Exception as e:
