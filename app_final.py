@@ -161,54 +161,7 @@ st.markdown(
 st.title("Breast Cancer Analysis App")
 
 show_documentation()
-# Configure page settings first
-st.set_page_config(
-    page_title="Breast Cancer Analysis",
-    page_icon="🏥",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
-# Initialize session state
-session_vars = {
-    'data': None,
-    'selected_features': [],
-    'model': None,
-    'predictions': None,
-    'current_tab': 0,
-    'analysis_complete': False
-}
-
-for var, value in session_vars.items():
-    if var not in st.session_state:
-        st.session_state[var] = value
-
-# Load data with caching
-@st.cache_data
-def load_data(url):
-    return pd.read_csv(url)
-
-data = load_data(URL)
-st.session_state.data = data
-
-# Process features with caching
-@st.cache_data
-def process_features(data):
-    numeric_features = data.select_dtypes(include=['float64', 'int64']).columns
-    categorical_features = data.select_dtypes(include=['object']).columns
-    return data, numeric_features, categorical_features
-
-data, numeric_features, categorical_features = process_features(data)
-
-# Add download functionality
-csv = data.to_csv(index=False).encode('utf-8')
-st.download_button(
-    "Download Data",
-    csv,
-    "breast_cancer_analysis.csv",
-    "text/csv",
-    key='download-csv'
-)
 try:
     data = pd.read_csv(url)
 except Exception as e:
@@ -285,6 +238,124 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = tabs
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
+
+
+# Cache Management Functions
+def setup_caching():
+    """Configure caching for data and computations"""
+
+    @st.cache_data
+    def load_cached_data(url):
+        return pd.read_csv(url)
+
+    @st.cache_data
+    def process_cached_features(data):
+        return data.select_dtypes(include=['float64', 'int64']).columns
+
+    @st.cache_resource
+    def get_cached_model():
+        return RandomForestClassifier(random_state=42)
+
+    return load_cached_data, process_cached_features, get_cached_model
+
+
+# Session State Management
+def initialize_session_state():
+    """Initialize and manage session state variables"""
+    state_variables = {
+        'data': None,
+        'features': [],
+        'model': None,
+        'results': None,
+        'selected_tab': 0,
+        'analysis_complete': False
+    }
+
+    for var, default_value in state_variables.items():
+        if var not in st.session_state:
+            st.session_state[var] = default_value
+
+
+def update_session_state(key, value):
+    """Update specific session state variable"""
+    st.session_state[key] = value
+
+
+# Page Configuration
+def configure_page_settings():
+    """Configure page layout and appearance"""
+    st.set_page_config(
+        page_title="Breast Cancer Analysis",
+        page_icon="🏥",
+        layout="wide",
+        initial_sidebar_state="expanded"
+    )
+
+    st.markdown("""
+        <style>
+        .main {max-width: 1200px;}
+        .stButton>button {width: 100%;}
+        .stProgress .st-bo {height: 20px;}
+        </style>
+    """, unsafe_allow_html=True)
+
+
+# Download Functionality
+def create_download_button(data, filename="analysis_results.csv"):
+    """Create download button for data export"""
+    csv = data.to_csv(index=False).encode('utf-8')
+    st.download_button(
+        label="📥 Download Results",
+        data=csv,
+        file_name=filename,
+        mime='text/csv',
+        key='download-button'
+    )
+
+
+# Progress Tracking
+def track_analysis_progress(steps=100):
+    """Display analysis progress with status updates"""
+    progress_bar = st.progress(0)
+    status_text = st.empty()
+
+    for i in range(steps):
+        progress_bar.progress(i + 1)
+        status_text.text(f'Analysis Progress: {i + 1}%')
+        time.sleep(0.01)
+
+    status_text.text('✅ Analysis Complete!')
+
+
+# Error Handling
+def handle_errors(func):
+    """Decorator for consistent error handling"""
+
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except Exception as e:
+            st.error(f"Error: {str(e)}")
+            logging.error(f"Error in {func.__name__}: {str(e)}")
+
+    return wrapper
+
+
+# Usage Example:
+def setup_app():
+    """Initialize all app components"""
+    configure_page_settings()
+    initialize_session_state()
+    load_cached_data, process_cached_features, get_cached_model = setup_caching()
+    return load_cached_data, process_cached_features, get_cached_model
+
+
+# Call these functions in your app:
+load_data, process_features, get_model = setup_app()
+
+update_session_state('data', data)
+track_analysis_progress()
+create_download_button(data)
 
 # Data Overview Tab
 with tab1:
