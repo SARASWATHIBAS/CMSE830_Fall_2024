@@ -75,12 +75,33 @@ pip install -r requirements.txt
 Usage
 streamlit run app.py
 
-Contributing
-Fork the repository
-Create feature branch
-Commit changes
-Push to branch
-Create Pull Request
+# Contributing Guidelines
+
+We welcome and appreciate your contributions to the Breast Cancer Analysis project! Here's how you can contribute:
+
+## Contribution Process
+
+1. **Fork the Repository**
+   - Click the 'Fork' button at the top right of this repository
+   - Clone your fork locally: `git clone https://github.com/YOUR-USERNAME/breast-cancer-analysis`
+
+2. **Create Feature Branch**
+   - Create a new branch: `git checkout -b feature/your-feature-name`
+   - Keep branch names descriptive and relevant
+
+3. **Commit Changes**
+   - Follow conventional commits: `feat: add new visualization`
+   - Write clear commit messages
+   - Keep commits focused and atomic
+
+4. **Push to Branch**
+   - Push changes to your fork: `git push origin feature/your-feature-name`
+   - Ensure all tests pass before pushing
+
+5. **Create Pull Request**
+   - Open a PR from your feature branch to our main branch
+   - Fill out the PR template completely
+   - Link relevant issues
 
 # Description of files:
 ## Final_Term_Project.ipynb
@@ -127,16 +148,17 @@ cd CMSE830_Fall_2024
 3. Install the required packages:
 pip install -r requirements.txt
 
-Contact
-Email: baskar12@msu.edu
-LinkedIn: https://www.linkedin.com/in/saraswathibaskaran/
 
-This documentation provides:
-1. Clear project overview
-2. Detailed data dictionary
-3. Comprehensive modeling approach
-4. Professional repository structure
-5. Installation and usage instructions
-6. Contributing guidelines
 
-The repository structure follows industry best practices and makes the project accessible to other developers.
+## Code Standards
+- Follow PEP 8 style guide
+- Add docstrings to functions
+- Include unit tests for new features
+- Maintain code coverage above 80%
+
+## Contact & Support
+- Email: baskar12@msu.edu
+- LinkedIn: https://www.linkedin.com/in/saraswathibaskaran/
+
+Join us in making breast cancer analysis more accessible and accurate!
+
