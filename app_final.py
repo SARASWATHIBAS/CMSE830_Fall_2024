@@ -202,11 +202,6 @@ data = cache_data(url)
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
 numeric_cols, categorical_cols = cache_processed_features(data)
 
-# Print results
-st.write("Numeric Features:", numeric_cols)
-st.write("Categorical Features:", categorical_cols)
-
-# Sidebar filters
 # Sidebar filters
 st.sidebar.header("Filter Data")
 data_actual = data.copy()
