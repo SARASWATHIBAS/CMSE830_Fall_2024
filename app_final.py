@@ -149,7 +149,7 @@ tabs = st.tabs([
 ])
 
 # Data Overview Tab
-with tab1:
+with tabs[0]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     # Static Overview
     st.header("Data Overview")
@@ -191,7 +191,7 @@ with tab1:
         st.write(data[selected_numeric].describe())
 
 # Search Tab with Dropdown for Categorical Variables
-with tab2:
+with tabs[1]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Search Data")
 
@@ -229,7 +229,7 @@ with tab2:
     st.write("Thank you for using the Breast Cancer Analysis App!")
 
 # Correlation Heatmap Tab
-with tab3:
+with tabs[2]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Correlation Heatmap")
     if selected_numeric:
@@ -245,7 +245,7 @@ with tab3:
         st.write("Please select numeric columns for the correlation heatmap.")
 
 # Data Imputation Comparison Tab
-with tab4:
+with tabs[3]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Imputation Methods: Mean vs KNN")
     if selected_numeric:
@@ -273,7 +273,7 @@ with tab4:
         st.write("Please select numeric columns for imputation comparison.")
 
 # Min-Max Scaling Tab
-with tab5:
+with tabs[4]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Min-Max Scaling")
     if selected_numeric:
@@ -286,7 +286,7 @@ with tab5:
         st.write("Please select numeric columns for min-max scaling.")
 
 # Advanced Visualizations Tab
-with tab6:
+with tabs[5]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Visualizations")
 
@@ -359,7 +359,7 @@ with tab6:
 st.write("### Thank you for using the Breast Cancer Analysis App!")
 
 # Modeling Tab
-with tab7:
+with tabs[6]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.header("Model Development & Evaluation")
 
@@ -506,7 +506,7 @@ with tab7:
             st.plotly_chart(fig)
 
 # Tab 8: Advanced Data Cleaning and Preprocessing
-with tab8:
+with tabs[7]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.subheader("Advanced Data Cleaning and Preprocessing")
 
@@ -667,7 +667,7 @@ with tab8:
     )
 
     # Advanced Data Cleaning and EDA Tab
-    with tab9:
+    with tabs[8]:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         st.header("Advanced Data Analysis & Preprocessing")
 
@@ -796,7 +796,7 @@ with tab8:
                          title=f'Outlier Analysis for {selected_col}')
             st.plotly_chart(fig)
 # Feature Engineering Tab
-with tab10:
+with tabs[9]:
     st.markdown('<div class="tab-content">', unsafe_allow_html=True)
     st.header("Data Processing & Feature Engineering")
 
