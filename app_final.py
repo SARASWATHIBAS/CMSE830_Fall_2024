@@ -281,24 +281,6 @@ def update_session_state(key, value):
     st.session_state[key] = value
 
 
-# Page Configuration
-def configure_page_settings():
-    """Configure page layout and appearance"""
-    st.set_page_config(
-        page_title="Breast Cancer Analysis",
-        page_icon="🏥",
-        layout="wide",
-        initial_sidebar_state="expanded"
-    )
-
-    st.markdown("""
-        <style>
-        .main {max-width: 1200px;}
-        .stButton>button {width: 100%;}
-        .stProgress .st-bo {height: 20px;}
-        </style>
-    """, unsafe_allow_html=True)
-
 
 # Download Functionality
 def create_download_button(data, filename="analysis_results.csv"):
@@ -344,7 +326,6 @@ def handle_errors(func):
 # Usage Example:
 def setup_app():
     """Initialize all app components"""
-    configure_page_settings()
     initialize_session_state()
     load_cached_data, process_cached_features, get_cached_model = setup_caching()
     return load_cached_data, process_cached_features, get_cached_model
@@ -354,8 +335,8 @@ def setup_app():
 load_data, process_features, get_model = setup_app()
 
 update_session_state('data', data)
-track_analysis_progress()
-create_download_button(data)
+# track_analysis_progress()
+# create_download_button(data)
 
 # Data Overview Tab
 with tab1:
