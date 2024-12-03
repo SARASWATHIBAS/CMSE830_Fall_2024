@@ -161,11 +161,11 @@ st.markdown(
 st.title("Breast Cancer Analysis App")
 
 show_documentation()
-
-try:
-    data = pd.read_csv(url)
-except Exception as e:
-    st.error(f"Error loading data: {e}")
+#
+# try:
+#     data = pd.read_csv(url)
+# except Exception as e:
+#     st.error(f"Error loading data: {e}")
 
 # Remove any unnamed columns
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
@@ -246,30 +246,36 @@ def cache_data(url):
 
 @st.cache_data
 def cache_processed_features(data):
-    """Cache feature processing results"""
-    numeric_features = data.select_dtypes(include=['float64', 'int64']).columns
-    categorical_features = data.select_dtypes(include=['object']).columns
-    return numeric_features, categorical_features
+    """
+    Cache and return processed numeric and categorical features
 
-@st.cache_data
-def cache_analysis_results(data, selected_features):
-    """Cache analysis computations"""
-    results = {
-        'summary': data[selected_features].describe(),
-        'correlations': data[selected_features].corr()
-    }
-    return results
+    Parameters:
+        data (pd.DataFrame): Input dataset
 
-@st.cache_resource
-def cache_ml_model():
-    """Cache machine learning model"""
-    return RandomForestClassifier(random_state=42)
+    Returns:
+        tuple: (numeric_columns, categorical_columns)
+    """
+    # Get numeric columns
+    numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns.tolist()
+
+    # Get categorical columns
+    categorical_cols = data.select_dtypes(include=['object', 'category']).columns.tolist()
+
+    # Add additional feature processing if needed
+    # Example: Remove specific columns, rename columns, etc.
+
+    return numeric_cols, categorical_cols
+
+
+# Example usage:
+numeric_cols, categorical_cols = cache_processed_features(data)
+
+# Print results
+st.write("Numeric Features:", numeric_cols)
+st.write("Categorical Features:", categorical_cols)
 
 # Usage in your app:
 data = cache_data(url)
-numeric_cols, categorical_cols = cache_processed_features(data)
-analysis_results = cache_analysis_results(data, numeric_cols)
-model = cache_ml_model()
 
 # Data Overview Tab
 with tab1:
