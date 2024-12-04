@@ -389,47 +389,6 @@ def data_science_space():
         else:
             st.write("Please select numeric columns for the correlation heatmap.")
 
-    # Data Imputation Comparison Tab
-    with tab4:
-        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-        st.subheader("Imputation Methods: Mean vs KNN")
-        if selected_numeric:
-            # Mean Imputation
-            mean_imputer = SimpleImputer(strategy='mean')
-            data_mean_imputed = pd.DataFrame(mean_imputer.fit_transform(data[selected_numeric]),
-                                             columns=selected_numeric)
-
-            # KNN Imputation
-            knn_imputer = KNNImputer(n_neighbors=5)
-            data_knn_imputed = pd.DataFrame(knn_imputer.fit_transform(data[selected_numeric]),
-                                            columns=selected_numeric)
-
-            # Show distribution comparisons
-            for col in selected_numeric:
-                fig, ax = plt.subplots(1, 2, figsize=(12, 5))
-                sns.histplot(data_mean_imputed[col], kde=True, ax=ax[0], color='skyblue')
-                ax[0].set_title(f'Mean Imputed: {col}')
-
-                sns.histplot(data_knn_imputed[col], kde=True, ax=ax[1], color='salmon')
-                ax[1].set_title(f'KNN Imputed: {col}')
-
-                st.pyplot(fig)
-        else:
-            st.write("Please select numeric columns for imputation comparison.")
-
-    # Min-Max Scaling Tab
-    with tab5:
-        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-        st.subheader("Min-Max Scaling")
-        if selected_numeric:
-            min_max_scaler = MinMaxScaler()
-            scaled_data_min_max = pd.DataFrame(min_max_scaler.fit_transform(data[selected_numeric]),
-                                               columns=selected_numeric)
-
-            st.write(scaled_data_min_max.head())
-        else:
-            st.write("Please select numeric columns for min-max scaling.")
-
     # Advanced Visualizations Tab
     with tab6:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
@@ -666,26 +625,68 @@ def data_science_space():
         st.write(missing_summary)
 
         st.write("### Imputation Options")
-        imputation_method = st.radio(
-            "Select an imputation method for missing values:",
-            ["Mean Imputation", "KNN Imputation", "Drop Rows"]
+
+        # Column selection for imputation
+        columns_to_impute = st.multiselect(
+            "Select columns for imputation:",
+            numeric_filter,
+            default=numeric_filter[:2]
         )
 
-        if imputation_method == "Mean Imputation":
-            mean_imputer = SimpleImputer(strategy='mean')
-            data_imputed = pd.DataFrame(mean_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
-            st.write("Missing values have been filled using the mean of each column.")
-        elif imputation_method == "KNN Imputation":
-            knn_imputer = KNNImputer(n_neighbors=5)
-            data_imputed = pd.DataFrame(knn_imputer.fit_transform(data[numeric_filter]), columns=numeric_filter)
-            st.write("Missing values have been filled using KNN Imputation.")
-        elif imputation_method == "Drop Rows":
-            data_imputed = data.dropna()
-            st.write("Rows with missing values have been dropped.")
+        if columns_to_impute:
+            # Display original data statistics
+            st.write("Original Data Statistics:")
+            st.write(data[columns_to_impute].describe())
 
-        st.write("### Cleaned Data Preview")
-        st.write(data_imputed.head())
+            imputation_method = st.radio(
+                "Select an imputation method for missing values:",
+                ["Mean Imputation", "KNN Imputation", "Drop Rows"]
+            )
 
+            fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+
+            if imputation_method == "Mean Imputation":
+                mean_imputer = SimpleImputer(strategy='mean')
+                data_imputed = data.copy()
+                data_imputed[columns_to_impute] = mean_imputer.fit_transform(data[columns_to_impute])
+
+                for col in columns_to_impute:
+                    sns.histplot(data_imputed[col], kde=True, ax=ax[0], color='skyblue')
+                    ax[0].set_title(f'Mean Imputed: {col}')
+
+                st.write("Missing values filled using column means")
+
+            elif imputation_method == "KNN Imputation":
+                knn_imputer = KNNImputer(n_neighbors=5)
+                data_imputed = data.copy()
+                data_imputed[columns_to_impute] = knn_imputer.fit_transform(data[columns_to_impute])
+
+                for col in columns_to_impute:
+                    sns.histplot(data_imputed[col], kde=True, ax=ax[1], color='salmon')
+                    ax[1].set_title(f'KNN Imputed: {col}')
+
+                st.write("Missing values filled using KNN Imputation")
+
+            elif imputation_method == "Drop Rows":
+                data_imputed = data.dropna(subset=columns_to_impute)
+                st.write(f"Rows with missing values in selected columns dropped")
+
+            # Display imputation results
+            st.pyplot(fig)
+
+            # Compare statistics before and after imputation
+            st.write("### Imputation Results")
+            col1, col2 = st.columns(2)
+            with col1:
+                st.write("Original Data")
+                st.write(data[columns_to_impute].isnull().sum())
+            with col2:
+                st.write("Imputed Data")
+                st.write(data_imputed[columns_to_impute].isnull().sum())
+
+            st.write("### Cleaned Data Preview")
+            st.write(data_imputed[columns_to_impute].head())
+            
         # Encoding Categorical Variables
         encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
         if encoding_method == "Label Encoding":
