@@ -157,7 +157,7 @@ def data_science_space():
             }
 
             .stTabs [data-baseweb="tab"] {
-                min-width: 200px;
+                min-width: 300px    ;
                 font-size: 14px;
                 padding: 5px 10px;
                 background-color: #f0f2f6;
@@ -189,8 +189,6 @@ def data_science_space():
 
         unsafe_allow_html=True
     )
-
-    st.title("Breast Cancer Analysis App")
     # Data Caching
     @st.cache_data
     def cache_data(url):
