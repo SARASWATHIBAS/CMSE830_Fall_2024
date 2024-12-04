@@ -666,8 +666,8 @@ def data_science_space():
             elif imputation_method == "Drop Rows":
                 data_imputed = data.dropna(subset=columns_to_impute)
                 st.write(f"Rows with missing values in selected columns dropped")
-
-
+                # Display imputation results
+            st.pyplot(fig)
 
             st.write("### Cleaned Data Preview")
             st.write(data_imputed[columns_to_impute].head())
