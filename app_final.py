@@ -646,9 +646,13 @@ def data_science_space():
                 data_imputed = data.copy()
                 data_imputed[columns_to_impute] = mean_imputer.fit_transform(data[columns_to_impute])
 
+                # Create separate plots for each column
                 for col in columns_to_impute:
-                    sns.histplot(data_imputed[col], kde=True, ax=ax[0], color='skyblue')
-                    ax[0].set_title(f'Mean Imputed: {col}')
+                    fig, ax = plt.subplots(figsize=(8, 4))
+                    sns.histplot(data_imputed[col], kde=True, color='skyblue')
+                    plt.title(f'Mean Imputed Distribution: {col}')
+                    st.pyplot(fig)
+                    plt.close()
 
                 st.write("Missing values filled using column means")
 
@@ -657,9 +661,13 @@ def data_science_space():
                 data_imputed = data.copy()
                 data_imputed[columns_to_impute] = knn_imputer.fit_transform(data[columns_to_impute])
 
+                # Create separate plots for each column
                 for col in columns_to_impute:
-                    sns.histplot(data_imputed[col], kde=True, ax=ax[1], color='salmon')
-                    ax[1].set_title(f'KNN Imputed: {col}')
+                    fig, ax = plt.subplots(figsize=(8, 4))
+                    sns.histplot(data_imputed[col], kde=True, color='salmon')
+                    plt.title(f'KNN Imputed Distribution: {col}')
+                    st.pyplot(fig)
+                    plt.close()
 
                 st.write("Missing values filled using KNN Imputation")
 
