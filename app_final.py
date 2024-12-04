@@ -188,12 +188,12 @@ def data_science_space():
 
     st.title("Breast Cancer Analysis App")
     # Data Caching
-    @st.cache_data
+
     def cache_data(url):
         """Cache the initial dataset loading"""
         return pd.read_csv(url)
 
-    @st.cache_data
+
     def cache_processed_features(data):
         """
         Cache and return processed numeric and categorical features
