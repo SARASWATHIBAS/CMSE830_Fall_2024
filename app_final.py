@@ -31,32 +31,6 @@ from sklearn.cluster import KMeans
 from umap.umap_ import UMAP
 
 def production_space():
-    st.header("Clinical Production Space")
-
-    tool_choice = st.selectbox(
-        "Select Clinical Tool",
-        ["Risk Assessment", "Survival Prediction", "Treatment Planning"]
-    )
-
-    if tool_choice == "Risk Assessment":
-        st.subheader("Patient Risk Calculator")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            age = st.number_input("Patient Age", 18, 100)
-            tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
-            nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50)
-
-        with col2:
-            grade = st.selectbox("Tumor Grade", ["1", "2", "3"])
-            stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"])
-            er_status = st.selectbox("ER Status", ["Positive", "Negative"])
-
-        if st.button("Calculate Risk Score"):
-            risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
-            st.metric("Risk Score", f"{risk_score:.2f}")
-            generate_clinical_report(risk_score)
-
     def show_documentation():
         """Display comprehensive documentation and user guide"""
         with st.expander("📚 Documentation & User Guide", expanded=False):
@@ -123,6 +97,36 @@ def production_space():
             - Use appropriate visualization for your data type
             - Consider feature relationships before modeling
             """)
+    st.header("Clinical Production Space")
+
+    tool_choice = st.selectbox(
+        "Select Clinical Tool",
+        ["User Guide","Risk Assessment", "Survival Prediction", "Treatment Planning"]
+    )
+
+    if tool_choice == "User Guide":
+        show_documentation()
+
+    if tool_choice == "Risk Assessment":
+        st.subheader("Patient Risk Calculator")
+        col1, col2 = st.columns(2)
+
+        with col1:
+            age = st.number_input("Patient Age", 18, 100)
+            tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
+            nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50)
+
+        with col2:
+            grade = st.selectbox("Tumor Grade", ["1", "2", "3"])
+            stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"])
+            er_status = st.selectbox("ER Status", ["Positive", "Negative"])
+
+        if st.button("Calculate Risk Score"):
+            risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
+            st.metric("Risk Score", f"{risk_score:.2f}")
+            generate_clinical_report(risk_score)
+
+
 
 def data_science_space():
     st.header("Data Science Research Space")
@@ -188,11 +192,10 @@ def data_science_space():
 
     st.title("Breast Cancer Analysis App")
     # Data Caching
-
+    @st.cache_data
     def cache_data(url):
         """Cache the initial dataset loading"""
         return pd.read_csv(url)
-
 
     def cache_processed_features(data):
         """
@@ -1085,10 +1088,6 @@ def data_science_space():
                               title=f'Learning Curves - {selected_model}',
                               labels={'x': 'Training Examples', 'y': 'Score'})
                 st.plotly_chart(fig)
-
-
-
-
 
 def main():
     st.title("Breast Cancer Analysis Platform")
