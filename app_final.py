@@ -279,13 +279,13 @@ def data_science_space():
 
     # Create tabs with descriptive names
     tabs = st.tabs([
-        "Data Overview", "Search", "Correlation Heatmap", "Imputation Comparison", "Scaling", "Visualizations",
+        "Data Overview", "Search","Advanced Data Cleaning Preprocessing", "Visualizations","Advanced Data Analysis", "Data Processing & Feature Engineering",
         "Modeling",
-        "Advanced Data Cleaning Preprocessing", "Advanced Data Analysis", "Data Processing & Feature Engineering"
+
     ])
 
     # Assign tabs to variables
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = tabs
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = tabs
 
     # Use a session state to store the active tab
     if "active_tab" not in st.session_state:
@@ -372,25 +372,209 @@ def data_science_space():
                     st.warning("No results found.")
 
         st.write("Thank you for using the Breast Cancer Analysis App!")
+        # Tab 8: Advanced Data Cleaning and Preprocessing
+        with tab3:
+            st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+            st.subheader("Advanced Data Cleaning and Preprocessing")
 
-    # Correlation Heatmap Tab
-    with tab3:
-        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-        st.subheader("Correlation Heatmap")
-        if selected_numeric:
-            scaler = StandardScaler()
-            scaled_data = scaler.fit_transform(data[selected_numeric])
-            corr_matrix = np.corrcoef(scaled_data.T)
+            st.write("### Missing Value Analysis")
+            st.write("Below is the missing data summary for the dataset:")
+            missing_data = data.isnull().sum()
+            missing_percentage = (missing_data / len(data)) * 100
+            missing_summary = pd.DataFrame({
+                "Missing Values": missing_data,
+                "Percentage": missing_percentage
+            }).sort_values(by="Percentage", ascending=False)
+            st.write(missing_summary)
 
-            fig, ax = plt.subplots(figsize=(10, 8))
-            sns.heatmap(corr_matrix, annot=True, xticklabels=selected_numeric, yticklabels=selected_numeric,
-                        cmap='coolwarm')
-            st.pyplot(fig)
-        else:
-            st.write("Please select numeric columns for the correlation heatmap.")
+            st.write("### Imputation Options")
+
+            # Column selection for imputation
+            columns_to_impute = st.multiselect(
+                "Select columns for imputation:",
+                numeric_filter,
+                default=numeric_filter[:2]
+            )
+
+            if columns_to_impute:
+                imputation_method = st.radio(
+                    "Select an imputation method for missing values:",
+                    ["Mean Imputation", "KNN Imputation", "Drop Rows"]
+                )
+
+                fig, ax = plt.subplots(1, 2, figsize=(12, 5))
+
+                if imputation_method == "Mean Imputation":
+                    mean_imputer = SimpleImputer(strategy='mean')
+                    data_imputed = data.copy()
+                    data_imputed[columns_to_impute] = mean_imputer.fit_transform(data[columns_to_impute])
+
+                    # Create separate plots for each column
+                    for col in columns_to_impute:
+                        fig, ax = plt.subplots(figsize=(8, 4))
+                        sns.histplot(data_imputed[col], kde=True, color='skyblue')
+                        plt.title(f'Mean Imputed Distribution: {col}')
+                        st.pyplot(fig)
+                        plt.close()
+
+                    st.write("Missing values filled using column means")
+
+                elif imputation_method == "KNN Imputation":
+                    knn_imputer = KNNImputer(n_neighbors=5)
+                    data_imputed = data.copy()
+                    data_imputed[columns_to_impute] = knn_imputer.fit_transform(data[columns_to_impute])
+
+                    # Create separate plots for each column
+                    for col in columns_to_impute:
+                        fig, ax = plt.subplots(figsize=(8, 4))
+                        sns.histplot(data_imputed[col], kde=True, color='salmon')
+                        plt.title(f'KNN Imputed Distribution: {col}')
+                        st.pyplot(fig)
+                        plt.close()
+
+                    st.write("Missing values filled using KNN Imputation")
+
+                elif imputation_method == "Drop Rows":
+                    data_imputed = data.dropna(subset=columns_to_impute)
+                    st.write(f"Rows with missing values in selected columns dropped")
+                    # Display imputation results
+                    st.pyplot(fig)
+
+                st.write("### Cleaned Data Preview")
+                st.write(data_imputed[columns_to_impute].head())
+
+            # Encoding Categorical Variables
+            encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
+            if encoding_method == "Label Encoding":
+                label_column = st.selectbox("Select column for Label Encoding",
+                                            data.select_dtypes(include=['object']).columns)
+                label_encoder = LabelEncoder()
+                data_encoded = data.copy()
+                data_encoded[label_column] = label_encoder.fit_transform(data[label_column])
+                st.write(f"Label Encoded Data for {label_column}:", data_encoded.head())
+            elif encoding_method == "One-Hot Encoding":
+                data = pd.get_dummies(data, columns=data.select_dtypes(include=['object']).columns)
+                st.write("One-Hot Encoded Data:", data.head())
+
+            # Normalization and Scaling
+            scale_method = st.selectbox("Choose scaling method",
+                                        ("Min-Max Scaling", "Standardization", "Robust Scaling"))
+            if scale_method == "Min-Max Scaling":
+                scaler = MinMaxScaler()
+                data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+                data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+                st.write("Min-Max Scaled Data:", data.head())
+            elif scale_method == "Standardization":
+                scaler = StandardScaler()
+                data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+                data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+                st.write("Standardized Data:", data.head())
+            elif scale_method == "Robust Scaling":
+                scaler = RobustScaler()
+                data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
+                data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
+                st.write("Robust Scaled Data:", data.head())
+
+            # Feature Engineering: Extracting Date-Time Features
+            if "date" in data.columns:
+                data['year'] = pd.to_datetime(data['date']).dt.year
+                data['month'] = pd.to_datetime(data['date']).dt.month
+                data['weekday'] = pd.to_datetime(data['date']).dt.weekday
+                st.write("Extracted Date Features:", data.head())
+
+            # Binning continuous features (e.g., age)
+            if "age" in data.columns:
+                data['age_group'] = pd.cut(data['age'], bins=[0, 18, 35, 50, 100],
+                                           labels=['0-18', '19-35', '36-50', '51+'])
+                st.write("Binned Age Groups:", data.head())
+
+            # Handling Outliers: Z-Score and IQR Methods
+            outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
+
+            if outlier_method == "Z-Score Method":
+                numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
+
+                if len(numeric_columns) == 0:
+                    st.error("No numeric columns available for Z-score calculation.")
+                else:
+                    # Handle missing values
+                    if data.isnull().sum().any():
+                        st.warning("Data contains missing values. Proceeding to handle them.")
+                        data = data.dropna()  # You can choose to fill NaN values if needed
+
+                    # Z-Score Outlier Removal
+                    z_scores = stats.zscore(data[numeric_columns])
+                    abs_z_scores = np.abs(z_scores)
+                    data_cleaned = data[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
+                    st.write("Data after Z-Score Outlier Removal:", data_cleaned.head())
+
+            elif outlier_method == "IQR Method":
+                numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
+                Q1 = data[numeric_columns].quantile(0.25)
+                Q3 = data[numeric_columns].quantile(0.75)
+                IQR = Q3 - Q1
+                filtered_data = data[numeric_columns][
+                    ~((data[numeric_columns] < (Q1 - 1.5 * IQR)) | (data[numeric_columns] > (Q3 + 1.5 * IQR))).any(
+                        axis=1)]
+                st.write("Data after IQR Outlier Removal:", filtered_data.head())
+
+            # Handling Imbalanced Data: SMOTE
+            imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
+            if imbalanced:
+                num_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=3)
+                kmeans = KMeans(n_clusters=num_clusters, random_state=42)
+                cluster_labels = kmeans.fit_predict(scaled_data)
+
+                # Add cluster labels to the dataset
+                data["Cluster"] = cluster_labels
+                st.write("Data with Cluster Labels:", data.head())
+
+                # Balance clusters (if needed)
+                cluster_counts = data["Cluster"].value_counts()
+                st.write("Cluster Counts Before Balancing:", cluster_counts)
+
+                # Resampling logic: Duplicate rows from smaller clusters
+                max_cluster_size = cluster_counts.max()
+                balanced_data = pd.concat(
+                    [data[data["Cluster"] == cluster].sample(max_cluster_size, replace=True, random_state=42)
+                     for cluster in data["Cluster"].unique()],
+                    axis=0
+                )
+
+                st.write("Balanced Data After Resampling:")
+                st.write(balanced_data)
+
+            st.write("### Complex Data Integration Example")
+            st.markdown(
+                """
+                Complex data integration techniques are essential for merging datasets or enriching the dataset with external data sources.
+                Here, we demonstrate:
+                - Merging the dataset with a simulated external data source.
+                """
+            )
+
+            # Example of merging with external simulated data
+            external_data = pd.DataFrame({
+                'Age': sorted(data['Age'].unique()),
+                'Life Expectancy': np.random.randint(70, 85, size=len(data['Age'].unique()))
+            })
+
+            merged_data = pd.merge(data, external_data, on='Age', how='left')
+
+            st.write("### Merged Data Preview")
+            st.write(merged_data.head())
+
+            st.write("### Next Steps")
+            st.markdown(
+                """
+                - Perform feature engineering on the merged data.
+                - Evaluate how integrated data improves predictive modeling.
+                """
+            )
+
 
     # Advanced Visualizations Tab
-    with tab6:
+    with tab4:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         st.subheader("Advanced Visualizations")
 
@@ -461,6 +645,299 @@ def data_science_space():
 
         # Closing message
     st.write("### Thank you for using the Breast Cancer Analysis App!")
+
+    # Advanced Data Cleaning and EDA Tab
+    with tab5:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        st.header("Advanced Data Analysis & Preprocessing")
+
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        st.subheader("Correlation Heatmap")
+        if selected_numeric:
+            scaler = StandardScaler()
+            scaled_data = scaler.fit_transform(data[selected_numeric])
+            corr_matrix = np.corrcoef(scaled_data.T)
+
+            fig, ax = plt.subplots(figsize=(10, 8))
+            sns.heatmap(corr_matrix, annot=True, xticklabels=selected_numeric, yticklabels=selected_numeric,
+                        cmap='coolwarm')
+            st.pyplot(fig)
+        else:
+            st.write("Please select numeric columns for the correlation heatmap.")
+
+        # 1. Data Quality Analysis
+        st.subheader("1. Data Quality Overview")
+
+        # Missing value analysis
+        missing_data = data.isnull().sum()
+        missing_percent = (missing_data / len(data)) * 100
+
+        quality_df = pd.DataFrame({
+            'Missing Values': missing_data,
+            'Missing Percentage': missing_percent,
+            'Data Type': data.dtypes
+        })
+
+        st.write(quality_df)
+
+        # 2. Statistical Analysis
+        st.subheader("2. Statistical Analysis")
+
+        # Numeric columns analysis
+        numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns
+
+        if st.checkbox("Show Detailed Statistical Analysis"):
+            stats_df = data[numeric_cols].agg([
+                'mean', 'median', 'std', 'min', 'max',
+                lambda x: x.quantile(0.25),
+                lambda x: x.quantile(0.75),
+                'skew', 'kurtosis'
+            ]).round(2)
+
+            stats_df.index = ['Mean', 'Median', 'Std Dev', 'Min', 'Max',
+                              '25th Percentile', '75th Percentile',
+                              'Skewness', 'Kurtosis']
+            st.write(stats_df)
+
+        # 3. Advanced Visualizations
+        st.subheader("3. Advanced Visualizations")
+
+        # Visualization 1: Distribution Analysis
+        if st.checkbox("Show Distribution Analysis"):
+            selected_num_col = st.selectbox("Select Column for Distribution", numeric_cols)
+
+            fig = make_subplots(rows=2, cols=1,
+                                subplot_titles=('Distribution Plot', 'Box Plot'))
+
+            # Add histogram
+            fig.add_trace(
+                go.Histogram(x=data[selected_num_col], name="Distribution"),
+                row=1, col=1
+            )
+
+            # Add box plot
+            fig.add_trace(
+                go.Box(x=data[selected_num_col], name="Box Plot"),
+                row=2, col=1
+            )
+
+            fig.update_layout(height=800, title_text=f"Distribution Analysis of {selected_num_col}")
+            st.plotly_chart(fig)
+
+        # Visualization 2: Time Series Analysis
+        if st.checkbox("Show Survival Analysis"):
+            fig = px.line(data.groupby('Age')['Survival Months'].mean().reset_index(),
+                          x='Age', y='Survival Months',
+                          title='Average Survival Months by Age')
+            st.plotly_chart(fig)
+
+        # Visualization 3: Feature Relationships
+        if st.checkbox("Show Feature Relationships"):
+            selected_features = st.multiselect("Select Features for Analysis",
+                                               numeric_cols,
+                                               default=numeric_cols[:3])
+
+            if len(selected_features) > 0:
+                correlation_matrix = data[selected_features].corr()
+
+                fig = px.imshow(correlation_matrix,
+                                labels=dict(color="Correlation"),
+                                x=correlation_matrix.columns,
+                                y=correlation_matrix.columns,
+                                color_continuous_scale='RdBu')
+
+                st.plotly_chart(fig)
+
+        # Visualization 4: Categorical Analysis
+        if st.checkbox("Show Categorical Analysis"):
+            categorical_cols = data.select_dtypes(include=['object']).columns
+            selected_cat = st.selectbox("Select Categorical Feature", categorical_cols)
+
+            value_counts = data[selected_cat].value_counts().reset_index()
+            value_counts.columns = ['Category', 'Count']
+
+            fig = px.pie(value_counts,
+                         values='Count',
+                         names='Category',
+                         title=f'Distribution of {selected_cat}')
+            st.plotly_chart(fig)
+
+        # Visualization 5: Bivariate Analysis
+        if st.checkbox("Show Bivariate Analysis"):
+            num_col = st.selectbox("Select Numeric Feature", numeric_cols, key='bivar_num')
+            cat_col = st.selectbox("Select Categorical Feature", categorical_cols, key='bivar_cat')
+
+            fig = px.violin(data, x=cat_col, y=num_col,
+                            box=True, points="all",
+                            title=f'Distribution of {num_col} across {cat_col}')
+            st.plotly_chart(fig)
+
+        # 4. Outlier Detection
+        st.subheader("4. Outlier Detection")
+
+        if st.checkbox("Show Outlier Analysis"):
+            selected_col = st.selectbox("Select Column for Outlier Detection", numeric_cols)
+
+            Q1 = data[selected_col].quantile(0.25)
+            Q3 = data[selected_col].quantile(0.75)
+            IQR = Q3 - Q1
+            outliers = data[(data[selected_col] < (Q1 - 1.5 * IQR)) |
+                            (data[selected_col] > (Q3 + 1.5 * IQR))]
+
+            st.write(f"Number of outliers detected: {len(outliers)}")
+
+            fig = px.box(data, y=selected_col,
+                         title=f'Outlier Analysis for {selected_col}')
+            st.plotly_chart(fig)
+
+        # Feature Engineering Tab
+    with tab6:
+        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
+        st.header("Data Processing & Feature Engineering")
+
+        # 1. Feature Creation Section
+        st.subheader("1. Feature Creation")
+
+        # Age Groups
+        if st.checkbox("Create Age Groups"):
+            age_mean = data_actual['Age'].mean()
+            age_std = data_actual['Age'].std()
+
+            actual_age = (data_actual['Age'] * age_std) + age_mean
+
+            data['Age_Group'] = pd.cut(data_actual['Age'],
+                                       bins=[0, 30, 45, 60, 75, 100],
+                                       labels=['Young', 'Middle', 'Senior', 'Elder', 'Advanced'])
+
+            # Visualize age distribution with calculated statistics
+            fig = make_subplots(rows=1, cols=2,
+                                subplot_titles=('Age Distribution', 'Age Groups'))
+
+            # Original age distribution
+            fig.add_trace(
+                go.Histogram(x=data_actual['Age'], name="Age Distribution"),
+                row=1, col=1
+            )
+
+            # Age groups distribution
+            age_group_counts = data['Age_Group'].value_counts()
+            fig.add_trace(
+                go.Bar(x=age_group_counts.index, y=age_group_counts.values, name="Age Groups"),
+                row=1, col=2
+            )
+
+            fig.update_layout(height=400, title_text="Age Analysis")
+            st.plotly_chart(fig)
+
+        # Survival Risk Score
+        if st.checkbox("Generate Survival Risk Score"):
+            data['Risk_Score'] = (
+                    data['Tumor Size'] * 0.3 +
+                    data['Reginol Node Positive'] * 0.4 +
+                    data['Age'] * 0.3
+            ).round(2)
+
+            fig = px.histogram(data, x='Risk_Score',
+                               title='Distribution of Risk Scores',
+                               nbins=30)
+            st.plotly_chart(fig)
+
+        # 2. Feature Transformation
+        st.subheader("2. Advanced Transformations")
+
+        transform_type = st.selectbox(
+            "Select Transformation Method",
+            ["Log Transform", "Box-Cox", "Yeo-Johnson", "Quantile"]
+        )
+
+        numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+        selected_col = st.selectbox("Select Column for Transformation", numeric_cols)
+
+        if transform_type and selected_col:
+            fig = make_subplots(rows=1, cols=2,
+                                subplot_titles=('Original Distribution', 'Transformed Distribution'))
+
+            # Original Distribution
+            fig.add_trace(
+                go.Histogram(x=data[selected_col], name="Original"),
+                row=1, col=1
+            )
+
+            # Transform data based on selection
+            if transform_type == "Log Transform":
+                transformed_data = np.log1p(data[selected_col])
+            elif transform_type == "Box-Cox":
+                transformed_data = stats.boxcox(data[selected_col] + 1)[0]
+            elif transform_type == "Yeo-Johnson":
+                transformed_data = stats.yeojohnson(data[selected_col])[0]
+            else:  # Quantile
+                transformer = QuantileTransformer(output_distribution='normal')
+                transformed_data = transformer.fit_transform(data[selected_col].values.reshape(-1, 1)).flatten()
+
+            # Transformed Distribution
+            fig.add_trace(
+                go.Histogram(x=transformed_data, name="Transformed"),
+                row=1, col=2
+            )
+
+            fig.update_layout(height=400, title_text=f"{transform_type} Transformation")
+            st.plotly_chart(fig)
+
+        # 3. Feature Interactions
+        st.subheader("3. Feature Interactions")
+
+        if st.checkbox("Generate Interaction Features"):
+            selected_features = st.multiselect(
+                "Select 2 Features for Interaction",
+                numeric_cols,
+                default=numeric_cols[:2]
+            )
+
+            if len(selected_features) >= 2:
+                # Multiplication Interaction
+                data[f'{selected_features[0]}_{selected_features[1]}_interaction'] = (
+                        data[selected_features[0]] * data[selected_features[1]]
+                )
+
+                # Ratio Interaction
+                data[f'{selected_features[0]}_{selected_features[1]}_ratio'] = (
+                        data[selected_features[0]] / (data[selected_features[1]] + 1)
+                )
+
+                st.write("New Interaction Features:")
+                st.write(data[[f'{selected_features[0]}_{selected_features[1]}_interaction',
+                               f'{selected_features[0]}_{selected_features[1]}_ratio']].describe())
+
+        # 4. Dimensionality Reduction
+        st.subheader("4. Dimensionality Reduction")
+
+        dim_reduction = st.selectbox(
+            "Select Dimensionality Reduction Method",
+            ["PCA", "t-SNE", "UMAP"]
+        )
+
+        if st.checkbox("Apply Dimensionality Reduction"):
+            # Prepare numeric data
+            X = data[numeric_cols].fillna(0)
+
+            if dim_reduction == "PCA":
+                reducer = PCA(n_components=2)
+                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+            elif dim_reduction == "t-SNE":
+                reducer = TSNE(n_components=2, random_state=42)
+                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+            elif dim_reduction == "UMAP":
+                reducer = UMAP(n_components=2, random_state=42)
+                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+
+            # Visualization
+            fig = px.scatter(
+                x=reduced_data[:, 0], y=reduced_data[:, 1],
+                color=data['Status'],
+                title=f'{dim_reduction} Visualization'
+            )
+            st.plotly_chart(fig)
+
 
     # Modeling Tab
     with tab7:
@@ -609,479 +1086,8 @@ def data_science_space():
                               labels={'x': 'Training Examples', 'y': 'Score'})
                 st.plotly_chart(fig)
 
-    # Tab 8: Advanced Data Cleaning and Preprocessing
-    with tab8:
-        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-        st.subheader("Advanced Data Cleaning and Preprocessing")
 
-        st.write("### Missing Value Analysis")
-        st.write("Below is the missing data summary for the dataset:")
-        missing_data = data.isnull().sum()
-        missing_percentage = (missing_data / len(data)) * 100
-        missing_summary = pd.DataFrame({
-            "Missing Values": missing_data,
-            "Percentage": missing_percentage
-        }).sort_values(by="Percentage", ascending=False)
-        st.write(missing_summary)
 
-        st.write("### Imputation Options")
-
-        # Column selection for imputation
-        columns_to_impute = st.multiselect(
-            "Select columns for imputation:",
-            numeric_filter,
-            default=numeric_filter[:2]
-        )
-
-        if columns_to_impute:
-            imputation_method = st.radio(
-                "Select an imputation method for missing values:",
-                ["Mean Imputation", "KNN Imputation", "Drop Rows"]
-            )
-
-            fig, ax = plt.subplots(1, 2, figsize=(12, 5))
-
-            if imputation_method == "Mean Imputation":
-                mean_imputer = SimpleImputer(strategy='mean')
-                data_imputed = data.copy()
-                data_imputed[columns_to_impute] = mean_imputer.fit_transform(data[columns_to_impute])
-
-                # Create separate plots for each column
-                for col in columns_to_impute:
-                    fig, ax = plt.subplots(figsize=(8, 4))
-                    sns.histplot(data_imputed[col], kde=True, color='skyblue')
-                    plt.title(f'Mean Imputed Distribution: {col}')
-                    st.pyplot(fig)
-                    plt.close()
-
-                st.write("Missing values filled using column means")
-
-            elif imputation_method == "KNN Imputation":
-                knn_imputer = KNNImputer(n_neighbors=5)
-                data_imputed = data.copy()
-                data_imputed[columns_to_impute] = knn_imputer.fit_transform(data[columns_to_impute])
-
-                # Create separate plots for each column
-                for col in columns_to_impute:
-                    fig, ax = plt.subplots(figsize=(8, 4))
-                    sns.histplot(data_imputed[col], kde=True, color='salmon')
-                    plt.title(f'KNN Imputed Distribution: {col}')
-                    st.pyplot(fig)
-                    plt.close()
-
-                st.write("Missing values filled using KNN Imputation")
-
-            elif imputation_method == "Drop Rows":
-                data_imputed = data.dropna(subset=columns_to_impute)
-                st.write(f"Rows with missing values in selected columns dropped")
-                # Display imputation results
-            st.pyplot(fig)
-
-            st.write("### Cleaned Data Preview")
-            st.write(data_imputed[columns_to_impute].head())
-
-        # Encoding Categorical Variables
-        encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
-        if encoding_method == "Label Encoding":
-            label_column = st.selectbox("Select column for Label Encoding",
-                                        data.select_dtypes(include=['object']).columns)
-            label_encoder = LabelEncoder()
-            data_encoded = data.copy()
-            data_encoded[label_column] = label_encoder.fit_transform(data[label_column])
-            st.write(f"Label Encoded Data for {label_column}:", data_encoded.head())
-        elif encoding_method == "One-Hot Encoding":
-            data = pd.get_dummies(data, columns=data.select_dtypes(include=['object']).columns)
-            st.write("One-Hot Encoded Data:", data.head())
-
-        # Normalization and Scaling
-        scale_method = st.selectbox("Choose scaling method", ("Min-Max Scaling", "Standardization", "Robust Scaling"))
-        if scale_method == "Min-Max Scaling":
-            scaler = MinMaxScaler()
-            data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
-            data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-            st.write("Min-Max Scaled Data:", data.head())
-        elif scale_method == "Standardization":
-            scaler = StandardScaler()
-            data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
-            data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-            st.write("Standardized Data:", data.head())
-        elif scale_method == "Robust Scaling":
-            scaler = RobustScaler()
-            data_scaled = scaler.fit_transform(data.select_dtypes(include=['float64', 'int64']))
-            data[data.select_dtypes(include=['float64', 'int64']).columns] = data_scaled
-            st.write("Robust Scaled Data:", data.head())
-
-        # Feature Engineering: Extracting Date-Time Features
-        if "date" in data.columns:
-            data['year'] = pd.to_datetime(data['date']).dt.year
-            data['month'] = pd.to_datetime(data['date']).dt.month
-            data['weekday'] = pd.to_datetime(data['date']).dt.weekday
-            st.write("Extracted Date Features:", data.head())
-
-        # Binning continuous features (e.g., age)
-        if "age" in data.columns:
-            data['age_group'] = pd.cut(data['age'], bins=[0, 18, 35, 50, 100], labels=['0-18', '19-35', '36-50', '51+'])
-            st.write("Binned Age Groups:", data.head())
-
-        # Handling Outliers: Z-Score and IQR Methods
-        outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
-
-        if outlier_method == "Z-Score Method":
-            numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
-
-            if len(numeric_columns) == 0:
-                st.error("No numeric columns available for Z-score calculation.")
-            else:
-                # Handle missing values
-                if data.isnull().sum().any():
-                    st.warning("Data contains missing values. Proceeding to handle them.")
-                    data = data.dropna()  # You can choose to fill NaN values if needed
-
-                # Z-Score Outlier Removal
-                z_scores = stats.zscore(data[numeric_columns])
-                abs_z_scores = np.abs(z_scores)
-                data_cleaned = data[(abs_z_scores < 3).all(axis=1)]  # Removing rows with z-score > 3
-                st.write("Data after Z-Score Outlier Removal:", data_cleaned.head())
-
-        elif outlier_method == "IQR Method":
-            numeric_columns = data.select_dtypes(include=['float64', 'int64']).columns
-            Q1 = data[numeric_columns].quantile(0.25)
-            Q3 = data[numeric_columns].quantile(0.75)
-            IQR = Q3 - Q1
-            filtered_data = data[numeric_columns][
-                ~((data[numeric_columns] < (Q1 - 1.5 * IQR)) | (data[numeric_columns] > (Q3 + 1.5 * IQR))).any(axis=1)]
-            st.write("Data after IQR Outlier Removal:", filtered_data.head())
-
-        # Handling Imbalanced Data: SMOTE
-        imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
-        if imbalanced:
-            num_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=3)
-            kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-            cluster_labels = kmeans.fit_predict(scaled_data)
-
-            # Add cluster labels to the dataset
-            data["Cluster"] = cluster_labels
-            st.write("Data with Cluster Labels:", data.head())
-
-            # Balance clusters (if needed)
-            cluster_counts = data["Cluster"].value_counts()
-            st.write("Cluster Counts Before Balancing:", cluster_counts)
-
-            # Resampling logic: Duplicate rows from smaller clusters
-            max_cluster_size = cluster_counts.max()
-            balanced_data = pd.concat(
-                [data[data["Cluster"] == cluster].sample(max_cluster_size, replace=True, random_state=42)
-                 for cluster in data["Cluster"].unique()],
-                axis=0
-            )
-
-            st.write("Balanced Data After Resampling:")
-            st.write(balanced_data)
-
-        st.write("### Complex Data Integration Example")
-        st.markdown(
-            """
-            Complex data integration techniques are essential for merging datasets or enriching the dataset with external data sources.
-            Here, we demonstrate:
-            - Merging the dataset with a simulated external data source.
-            """
-        )
-
-        # Example of merging with external simulated data
-        external_data = pd.DataFrame({
-            'Age': sorted(data['Age'].unique()),
-            'Life Expectancy': np.random.randint(70, 85, size=len(data['Age'].unique()))
-        })
-
-        merged_data = pd.merge(data, external_data, on='Age', how='left')
-
-        st.write("### Merged Data Preview")
-        st.write(merged_data.head())
-
-        st.write("### Next Steps")
-        st.markdown(
-            """
-            - Perform feature engineering on the merged data.
-            - Evaluate how integrated data improves predictive modeling.
-            """
-        )
-
-        # Advanced Data Cleaning and EDA Tab
-        with tab9:
-            st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-            st.header("Advanced Data Analysis & Preprocessing")
-
-            # 1. Data Quality Analysis
-            st.subheader("1. Data Quality Overview")
-
-            # Missing value analysis
-            missing_data = data.isnull().sum()
-            missing_percent = (missing_data / len(data)) * 100
-
-            quality_df = pd.DataFrame({
-                'Missing Values': missing_data,
-                'Missing Percentage': missing_percent,
-                'Data Type': data.dtypes
-            })
-
-            st.write(quality_df)
-
-            # 2. Statistical Analysis
-            st.subheader("2. Statistical Analysis")
-
-            # Numeric columns analysis
-            numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns
-
-            if st.checkbox("Show Detailed Statistical Analysis"):
-                stats_df = data[numeric_cols].agg([
-                    'mean', 'median', 'std', 'min', 'max',
-                    lambda x: x.quantile(0.25),
-                    lambda x: x.quantile(0.75),
-                    'skew', 'kurtosis'
-                ]).round(2)
-
-                stats_df.index = ['Mean', 'Median', 'Std Dev', 'Min', 'Max',
-                                  '25th Percentile', '75th Percentile',
-                                  'Skewness', 'Kurtosis']
-                st.write(stats_df)
-
-            # 3. Advanced Visualizations
-            st.subheader("3. Advanced Visualizations")
-
-            # Visualization 1: Distribution Analysis
-            if st.checkbox("Show Distribution Analysis"):
-                selected_num_col = st.selectbox("Select Column for Distribution", numeric_cols)
-
-                fig = make_subplots(rows=2, cols=1,
-                                    subplot_titles=('Distribution Plot', 'Box Plot'))
-
-                # Add histogram
-                fig.add_trace(
-                    go.Histogram(x=data[selected_num_col], name="Distribution"),
-                    row=1, col=1
-                )
-
-                # Add box plot
-                fig.add_trace(
-                    go.Box(x=data[selected_num_col], name="Box Plot"),
-                    row=2, col=1
-                )
-
-                fig.update_layout(height=800, title_text=f"Distribution Analysis of {selected_num_col}")
-                st.plotly_chart(fig)
-
-            # Visualization 2: Time Series Analysis
-            if st.checkbox("Show Survival Analysis"):
-                fig = px.line(data.groupby('Age')['Survival Months'].mean().reset_index(),
-                              x='Age', y='Survival Months',
-                              title='Average Survival Months by Age')
-                st.plotly_chart(fig)
-
-            # Visualization 3: Feature Relationships
-            if st.checkbox("Show Feature Relationships"):
-                selected_features = st.multiselect("Select Features for Analysis",
-                                                   numeric_cols,
-                                                   default=numeric_cols[:3])
-
-                if len(selected_features) > 0:
-                    correlation_matrix = data[selected_features].corr()
-
-                    fig = px.imshow(correlation_matrix,
-                                    labels=dict(color="Correlation"),
-                                    x=correlation_matrix.columns,
-                                    y=correlation_matrix.columns,
-                                    color_continuous_scale='RdBu')
-
-                    st.plotly_chart(fig)
-
-            # Visualization 4: Categorical Analysis
-            if st.checkbox("Show Categorical Analysis"):
-                categorical_cols = data.select_dtypes(include=['object']).columns
-                selected_cat = st.selectbox("Select Categorical Feature", categorical_cols)
-
-                value_counts = data[selected_cat].value_counts().reset_index()
-                value_counts.columns = ['Category', 'Count']
-
-                fig = px.pie(value_counts,
-                             values='Count',
-                             names='Category',
-                             title=f'Distribution of {selected_cat}')
-                st.plotly_chart(fig)
-
-            # Visualization 5: Bivariate Analysis
-            if st.checkbox("Show Bivariate Analysis"):
-                num_col = st.selectbox("Select Numeric Feature", numeric_cols, key='bivar_num')
-                cat_col = st.selectbox("Select Categorical Feature", categorical_cols, key='bivar_cat')
-
-                fig = px.violin(data, x=cat_col, y=num_col,
-                                box=True, points="all",
-                                title=f'Distribution of {num_col} across {cat_col}')
-                st.plotly_chart(fig)
-
-            # 4. Outlier Detection
-            st.subheader("4. Outlier Detection")
-
-            if st.checkbox("Show Outlier Analysis"):
-                selected_col = st.selectbox("Select Column for Outlier Detection", numeric_cols)
-
-                Q1 = data[selected_col].quantile(0.25)
-                Q3 = data[selected_col].quantile(0.75)
-                IQR = Q3 - Q1
-                outliers = data[(data[selected_col] < (Q1 - 1.5 * IQR)) |
-                                (data[selected_col] > (Q3 + 1.5 * IQR))]
-
-                st.write(f"Number of outliers detected: {len(outliers)}")
-
-                fig = px.box(data, y=selected_col,
-                             title=f'Outlier Analysis for {selected_col}')
-                st.plotly_chart(fig)
-    # Feature Engineering Tab
-    with tab10:
-        st.markdown('<div class="tab-content">', unsafe_allow_html=True)
-        st.header("Data Processing & Feature Engineering")
-
-        # 1. Feature Creation Section
-        st.subheader("1. Feature Creation")
-
-        # Age Groups
-        if st.checkbox("Create Age Groups"):
-            age_mean = data_actual['Age'].mean()
-            age_std = data_actual['Age'].std()
-
-            actual_age = (data_actual['Age'] * age_std) + age_mean
-
-            data['Age_Group'] = pd.cut(data_actual['Age'],
-                                       bins=[0, 30, 45, 60, 75, 100],
-                                       labels=['Young', 'Middle', 'Senior', 'Elder', 'Advanced'])
-
-            # Visualize age distribution with calculated statistics
-            fig = make_subplots(rows=1, cols=2,
-                                subplot_titles=('Age Distribution', 'Age Groups'))
-
-            # Original age distribution
-            fig.add_trace(
-                go.Histogram(x=data_actual['Age'], name="Age Distribution"),
-                row=1, col=1
-            )
-
-            # Age groups distribution
-            age_group_counts = data['Age_Group'].value_counts()
-            fig.add_trace(
-                go.Bar(x=age_group_counts.index, y=age_group_counts.values, name="Age Groups"),
-                row=1, col=2
-            )
-
-            fig.update_layout(height=400, title_text="Age Analysis")
-            st.plotly_chart(fig)
-
-        # Survival Risk Score
-        if st.checkbox("Generate Survival Risk Score"):
-            data['Risk_Score'] = (
-                    data['Tumor Size'] * 0.3 +
-                    data['Reginol Node Positive'] * 0.4 +
-                    data['Age'] * 0.3
-            ).round(2)
-
-            fig = px.histogram(data, x='Risk_Score',
-                               title='Distribution of Risk Scores',
-                               nbins=30)
-            st.plotly_chart(fig)
-
-        # 2. Feature Transformation
-        st.subheader("2. Advanced Transformations")
-
-        transform_type = st.selectbox(
-            "Select Transformation Method",
-            ["Log Transform", "Box-Cox", "Yeo-Johnson", "Quantile"]
-        )
-
-        numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
-        selected_col = st.selectbox("Select Column for Transformation", numeric_cols)
-
-        if transform_type and selected_col:
-            fig = make_subplots(rows=1, cols=2,
-                                subplot_titles=('Original Distribution', 'Transformed Distribution'))
-
-            # Original Distribution
-            fig.add_trace(
-                go.Histogram(x=data[selected_col], name="Original"),
-                row=1, col=1
-            )
-
-            # Transform data based on selection
-            if transform_type == "Log Transform":
-                transformed_data = np.log1p(data[selected_col])
-            elif transform_type == "Box-Cox":
-                transformed_data = stats.boxcox(data[selected_col] + 1)[0]
-            elif transform_type == "Yeo-Johnson":
-                transformed_data = stats.yeojohnson(data[selected_col])[0]
-            else:  # Quantile
-                transformer = QuantileTransformer(output_distribution='normal')
-                transformed_data = transformer.fit_transform(data[selected_col].values.reshape(-1, 1)).flatten()
-
-            # Transformed Distribution
-            fig.add_trace(
-                go.Histogram(x=transformed_data, name="Transformed"),
-                row=1, col=2
-            )
-
-            fig.update_layout(height=400, title_text=f"{transform_type} Transformation")
-            st.plotly_chart(fig)
-
-        # 3. Feature Interactions
-        st.subheader("3. Feature Interactions")
-
-        if st.checkbox("Generate Interaction Features"):
-            selected_features = st.multiselect(
-                "Select 2 Features for Interaction",
-                numeric_cols,
-                default=numeric_cols[:2]
-            )
-
-            if len(selected_features) >= 2:
-                # Multiplication Interaction
-                data[f'{selected_features[0]}_{selected_features[1]}_interaction'] = (
-                        data[selected_features[0]] * data[selected_features[1]]
-                )
-
-                # Ratio Interaction
-                data[f'{selected_features[0]}_{selected_features[1]}_ratio'] = (
-                        data[selected_features[0]] / (data[selected_features[1]] + 1)
-                )
-
-                st.write("New Interaction Features:")
-                st.write(data[[f'{selected_features[0]}_{selected_features[1]}_interaction',
-                               f'{selected_features[0]}_{selected_features[1]}_ratio']].describe())
-
-        # 4. Dimensionality Reduction
-        st.subheader("4. Dimensionality Reduction")
-
-        dim_reduction = st.selectbox(
-            "Select Dimensionality Reduction Method",
-            ["PCA", "t-SNE", "UMAP"]
-        )
-
-        if st.checkbox("Apply Dimensionality Reduction"):
-            # Prepare numeric data
-            X = data[numeric_cols].fillna(0)
-
-            if dim_reduction == "PCA":
-                reducer = PCA(n_components=2)
-                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
-            elif dim_reduction == "t-SNE":
-                reducer = TSNE(n_components=2, random_state=42)
-                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
-            elif dim_reduction == "UMAP":
-                reducer = UMAP(n_components=2, random_state=42)
-                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
-
-            # Visualization
-            fig = px.scatter(
-                x=reduced_data[:, 0], y=reduced_data[:, 1],
-                color=data['Status'],
-                title=f'{dim_reduction} Visualization'
-            )
-            st.plotly_chart(fig)
 
 
 def main():
