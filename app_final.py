@@ -143,205 +143,55 @@ def create_sidebar():
 
 def main():
     st.title("Breast Cancer Analysis Platform")
-    show_documentation()
 
-    # Create sidebar controls
-    selected_numeric, selected_categorical, analysis_type = create_sidebar()
+    # Create two main spaces using tabs
+    production_space, datascience_space = st.tabs(["Clinical Production Space", "Data Science Research Space"])
 
-    # Create main tabs
-    tabs = st.tabs([
-        "Overview",
-        "Data Analysis",
-        "Visualization",
-        "Modeling",
-        "Advanced Analysis"
-    ])
+    with production_space:
+        st.header("Clinical Decision Support")
+        st.write("""
+        Welcome to the Clinical Production Space. This interface is designed for medical professionals.
 
-    # Tab content
-    with tabs[0]:  # Overview
-        st.header("Data Overview")
-        st.write("### Dataset Statistics")
-        st.write(data[selected_numeric + selected_categorical].describe())
+        Key Features:
+        1. Risk Assessment
+        2. Survival Prediction
+        3. Treatment Recommendations
+        """)
 
-        if st.checkbox("Show Data Quality Report"):
-            st.write("### Data Quality Analysis")
-            missing_data = data.isnull().sum()
-            st.write("Missing Values:", missing_data[missing_data > 0])
-
-    with tabs[1]:  # Data Analysis
-        st.header("Statistical Analysis")
-
-        # Correlation analysis
-        if len(selected_numeric) > 1:
-            st.subheader("Feature Correlations")
-            corr_matrix = data[selected_numeric].corr()
-            fig = px.imshow(corr_matrix,
-                            title="Correlation Heatmap",
-                            color_continuous_scale='RdBu')
-            st.plotly_chart(fig)
-
-        # Distribution analysis
-        st.subheader("Feature Distributions")
-        selected_feature = st.selectbox("Select Feature", selected_numeric)
-        fig = px.histogram(data, x=selected_feature,
-                           title=f"Distribution of {selected_feature}")
-        st.plotly_chart(fig)
-    with tabs[2]:  # Visualization
-        st.header("Interactive Visualizations")
-
-        viz_type = st.selectbox(
-            "Select Visualization Type",
-            ["Scatter Plot", "Box Plot", "Violin Plot", "3D Scatter"]
+        # Clinical tools
+        tool_choice = st.selectbox(
+            "Select Clinical Tool",
+            ["Risk Calculator", "Survival Predictor", "Treatment Guide"]
         )
 
-        if viz_type == "Scatter Plot":
-            x_col = st.selectbox("X-axis", selected_numeric, key='scatter_x')
-            y_col = st.selectbox("Y-axis", selected_numeric, key='scatter_y')
-            color_col = st.selectbox("Color by", selected_categorical)
+        # Production-ready features with clear instructions
+        if tool_choice == "Risk Calculator":
+            st.subheader("Patient Risk Assessment")
+            age = st.number_input("Patient Age", 18, 100)
+            tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
+            nodes = st.number_input("Positive Lymph Nodes", 0, 50)
 
-            fig = px.scatter(data, x=x_col, y=y_col, color=color_col,
-                             title=f"{x_col} vs {y_col} by {color_col}")
-            st.plotly_chart(fig)
+            if st.button("Calculate Risk"):
+                risk_score = (age * 0.2 + tumor_size * 0.5 + nodes * 0.3) / 100
+                st.metric("Risk Score", f"{risk_score:.2f}")
 
-        elif viz_type == "Box Plot":
-            numeric_col = st.selectbox("Numeric Feature", selected_numeric)
-            category_col = st.selectbox("Categorical Feature", selected_categorical)
+    with datascience_space:
+        st.header("Data Science Research Platform")
+        st.write("""
+        Welcome to the Research Space. This interface provides comprehensive data analysis tools.
 
-            fig = px.box(data, x=category_col, y=numeric_col,
-                         title=f"Distribution of {numeric_col} by {category_col}")
-            st.plotly_chart(fig)
+        Methodology:
+        1. Data Preprocessing
+        2. Feature Engineering
+        3. Model Development
+        4. Validation
+        """)
 
-        elif viz_type == "Violin Plot":
-            numeric_col = st.selectbox("Numeric Feature", selected_numeric, key='violin_num')
-            category_col = st.selectbox("Categorical Feature", selected_categorical, key='violin_cat')
-
-            fig = px.violin(data, x=category_col, y=numeric_col,
-                            title=f"Distribution of {numeric_col} by {category_col}")
-            st.plotly_chart(fig)
-
-        else:  # 3D Scatter
-            if len(selected_numeric) >= 3:
-                x_col = st.selectbox("X-axis", selected_numeric, key='3d_x')
-                y_col = st.selectbox("Y-axis", selected_numeric, key='3d_y')
-                z_col = st.selectbox("Z-axis", selected_numeric, key='3d_z')
-                color_col = st.selectbox("Color by", selected_categorical, key='3d_color')
-
-                fig = px.scatter_3d(data, x=x_col, y=y_col, z=z_col,
-                                    color=color_col,
-                                    title="3D Feature Visualization")
-                st.plotly_chart(fig)
-            else:
-                st.warning("Please select at least 3 numeric features for 3D visualization")
-    with tabs[3]:  # Modeling
-        st.header("Machine Learning Models")
-
-        model_type = st.selectbox(
-            "Select Model Type",
-            ["Classification", "Regression", "Clustering"]
+        # Research tools with detailed methodology
+        analysis_type = st.selectbox(
+            "Select Analysis Type",
+            ["Exploratory Analysis", "Model Development", "Feature Engineering"]
         )
-
-        if model_type in ["Classification", "Regression"]:
-            # Prepare data
-            X = data[selected_numeric]
-            y = data['Status'] if model_type == "Classification" else data['Survival Months']
-
-            # Split data
-            X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
-
-            if model_type == "Classification":
-                models = {
-                    'Random Forest': RandomForestClassifier(),
-                    'XGBoost': XGBClassifier(),
-                    'Logistic Regression': LogisticRegression()
-                }
-
-                selected_model = st.selectbox("Select Model", list(models.keys()))
-                model = models[selected_model]
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-
-                # Display metrics
-                st.write("Model Performance:")
-                metrics = {
-                    'Accuracy': accuracy_score(y_test, y_pred),
-                    'Precision': precision_score(y_test, y_pred, average='weighted'),
-                    'Recall': recall_score(y_test, y_pred, average='weighted'),
-                    'F1 Score': f1_score(y_test, y_pred, average='weighted')
-                }
-
-                for metric, value in metrics.items():
-                    st.metric(metric, f"{value:.3f}")
-
-            else:  # Regression
-                models = {
-                    'Random Forest': RandomForestRegressor(),
-                    'XGBoost': XGBRegressor(),
-                    'Linear Regression': LinearRegression()
-                }
-
-                selected_model = st.selectbox("Select Model", list(models.keys()))
-                model = models[selected_model]
-                model.fit(X_train, y_train)
-                y_pred = model.predict(X_test)
-
-                # Display metrics
-                st.write("Model Performance:")
-                metrics = {
-                    'R2 Score': r2_score(y_test, y_pred),
-                    'MAE': mean_absolute_error(y_test, y_pred),
-                    'MSE': mean_squared_error(y_test, y_pred)
-                }
-
-                for metric, value in metrics.items():
-                    st.metric(metric, f"{value:.3f}")
-
-        else:  # Clustering
-            n_clusters = st.slider("Number of Clusters", 2, 8, 3)
-            kmeans = KMeans(n_clusters=n_clusters, random_state=42)
-            clusters = kmeans.fit_predict(data[selected_numeric])
-
-            # Visualize clusters
-            if len(selected_numeric) >= 2:
-                fig = px.scatter(
-                    data, x=selected_numeric[0], y=selected_numeric[1],
-                    color=clusters,
-                    title="Cluster Visualization"
-                )
-                st.plotly_chart(fig)
-
-    with tabs[4]:  # Advanced Analysis
-        st.header("Advanced Analysis Tools")
-
-        analysis_tool = st.selectbox(
-            "Select Analysis Tool",
-            ["Dimensionality Reduction", "Feature Importance", "Survival Analysis"]
-        )
-
-        if analysis_tool == "Dimensionality Reduction":
-            method = st.selectbox(
-                "Select Method",
-                ["PCA", "t-SNE", "UMAP"]
-            )
-
-            # Apply dimensionality reduction
-            X = StandardScaler().fit_transform(data[selected_numeric])
-
-            if method == "PCA":
-                reducer = PCA(n_components=2)
-            elif method == "t-SNE":
-                reducer = TSNE(n_components=2)
-            else:
-                reducer = UMAP(n_components=2)
-
-            reduced_data = reducer.fit_transform(X)
-
-            fig = px.scatter(
-                x=reduced_data[:, 0], y=reduced_data[:, 1],
-                color=data[selected_categorical[0]] if selected_categorical else None,
-                title=f"{method} Visualization"
-            )
-            st.plotly_chart(fig)
-
 
 if __name__ == "__main__":
     main()
