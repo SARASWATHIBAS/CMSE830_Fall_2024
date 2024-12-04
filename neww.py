@@ -30,6 +30,76 @@ from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from umap.umap_ import UMAP
 
+
+# Add this at the beginning of your app, right after the imports and before the main content
+
+def show_documentation():
+    """Display comprehensive documentation and user guide"""
+    with st.expander("📚 Documentation & User Guide", expanded=False):
+        st.markdown("""
+        # Breast Cancer Analysis App Documentation
+
+        ## Overview
+        This application provides comprehensive tools for analyzing breast cancer data through various statistical and machine learning approaches.
+
+        ## Key Features
+        1. **Data Analysis**
+           - Data overview and statistics
+           - Missing value analysis
+           - Correlation studies
+
+        2. **Visualization Tools**
+           - Interactive plots
+           - Statistical visualizations
+           - Distribution analysis
+
+        3. **Machine Learning**
+           - Classification models
+           - Clustering analysis
+           - Regression predictions
+
+        4. **Data Processing**
+           - Advanced cleaning
+           - Feature engineering
+           - Dimensionality reduction
+
+        ## How to Use
+
+        ### 1. Data Selection
+        - Use the sidebar to select features
+        - Choose categorical and numerical columns
+        - Apply filters as needed
+
+        ### 2. Analysis Workflow
+        1. Start with Data Overview
+        2. Perform initial visualizations
+        3. Apply preprocessing steps
+        4. Run machine learning models
+
+        ### 3. Tips for Best Results
+        - Select relevant features for analysis
+        - Check data quality before modeling
+        - Use appropriate scaling methods
+
+        ## Tab Guide
+
+        1. **Data Overview**: Basic statistics and data summary
+        2. **Search**: Find specific data points
+        3. **Correlation**: Analyze feature relationships
+        4. **Imputation**: Handle missing values
+        5. **Scaling**: Normalize data
+        6. **Visualizations**: Create plots
+        7. **Modeling**: Build ML models
+        8. **Advanced Cleaning**: Deep data preprocessing
+        9. **Advanced Analysis**: Complex analytical tools
+        10. **Feature Engineering**: Create new features
+
+        ## Best Practices
+        - Always check data quality first
+        - Use appropriate visualization for your data type
+        - Consider feature relationships before modeling
+        """)
+
 # Load the dataset from GitHub
 url = "https://raw.githubusercontent.com/SARASWATHIBAS/CMSE830_Fall_2024/main/SEER%20Breast%20Cancer%20Dataset%20.csv"
 
@@ -90,15 +160,48 @@ st.markdown(
 
 st.title("Breast Cancer Analysis App")
 
-try:
-    data = pd.read_csv(url)
-except Exception as e:
-    st.error(f"Error loading data: {e}")
+show_documentation()
+#
+# try:
+#     data = pd.read_csv(url)
+# except Exception as e:
+#     st.error(f"Error loading data: {e}")
+
+# Data Caching
+@st.cache_data
+def cache_data(url):
+    """Cache the initial dataset loading"""
+    return pd.read_csv(url)
+
+@st.cache_data
+def cache_processed_features(data):
+    """
+    Cache and return processed numeric and categorical features
+
+    Parameters:
+        data (pd.DataFrame): Input dataset
+
+    Returns:
+        tuple: (numeric_columns, categorical_columns)
+    """
+    # Get numeric columns
+    numeric_cols = data.select_dtypes(include=['int64', 'float64']).columns.tolist()
+
+    # Get categorical columns
+    categorical_cols = data.select_dtypes(include=['object', 'category']).columns.tolist()
+
+    # Add additional feature processing if needed
+    # Example: Remove specific columns, rename columns, etc.
+
+    return numeric_cols, categorical_cols
+
+# Usage in your app:
+data = cache_data(url)
 
 # Remove any unnamed columns
 data = data.loc[:, ~data.columns.str.contains('^Unnamed')]
+numeric_cols, categorical_cols = cache_processed_features(data)
 
-# Sidebar filters
 # Sidebar filters
 st.sidebar.header("Filter Data")
 data_actual = data.copy()
@@ -166,6 +269,7 @@ tab1, tab2, tab3, tab4, tab5, tab6, tab7, tab8, tab9, tab10 = tabs
 # Use a session state to store the active tab
 if "active_tab" not in st.session_state:
     st.session_state.active_tab = tab1
+
 
 # Data Overview Tab
 with tab1:
