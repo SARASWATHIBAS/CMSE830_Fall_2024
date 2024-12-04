@@ -634,10 +634,6 @@ def data_science_space():
         )
 
         if columns_to_impute:
-            # Display original data statistics
-            st.write("Original Data Statistics:")
-            st.write(data[columns_to_impute].describe())
-
             imputation_method = st.radio(
                 "Select an imputation method for missing values:",
                 ["Mean Imputation", "KNN Imputation", "Drop Rows"]
@@ -671,22 +667,11 @@ def data_science_space():
                 data_imputed = data.dropna(subset=columns_to_impute)
                 st.write(f"Rows with missing values in selected columns dropped")
 
-            # Display imputation results
-            st.pyplot(fig)
 
-            # Compare statistics before and after imputation
-            st.write("### Imputation Results")
-            col1, col2 = st.columns(2)
-            with col1:
-                st.write("Original Data")
-                st.write(data[columns_to_impute].isnull().sum())
-            with col2:
-                st.write("Imputed Data")
-                st.write(data_imputed[columns_to_impute].isnull().sum())
 
             st.write("### Cleaned Data Preview")
             st.write(data_imputed[columns_to_impute].head())
-            
+
         # Encoding Categorical Variables
         encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
         if encoding_method == "Label Encoding":
