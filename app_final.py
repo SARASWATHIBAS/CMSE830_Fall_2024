@@ -324,8 +324,10 @@ def production_space():
         if st.button("Calculate Risk Score"):
             risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
             st.metric("Risk Score", f"{risk_score:.2f}")
-
-
+    elif tool_choice == "Survival Prediction":
+        run_survival_prediction()
+    else:
+        run_treatment_planning()
 
 
 def data_science_space():
