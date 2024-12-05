@@ -440,10 +440,6 @@ def production_space():
             """)
     st.header("Clinical Production Space")
 
-    display_input_requirements()
-
-    display_expected_outputs()
-
 
     tool_choice = st.selectbox(
         "Select Clinical Tool",
@@ -452,10 +448,14 @@ def production_space():
 
     if tool_choice == "User Guide":
         show_documentation()
+        display_input_requirements()
+
+        display_expected_outputs()
+
 
     if tool_choice == "Risk Assessment":
-        st.subheader("Patient Risk Calculator")
-        col1, col2 = st.columns(2)
+            st.subheader("Patient Risk Calculator")
+            col1, col2 = st.columns(2)
 
         with col1:
             age = st.number_input("Patient Age", 18, 100)
