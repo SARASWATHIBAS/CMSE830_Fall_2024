@@ -328,7 +328,7 @@ def production_space():
 
             ## Overview
             This application provides comprehensive tools for analyzing breast cancer data through various statistical and machine learning approaches.
-
+            The Production space is designed to address the challenge of predicting the likelihood of a person being diagnosed with breast cancer based on their specific characteristics. It also aims to raise awareness and provide foundational guidance to clinical professionals on potential steps for effective treatment planning.
             ## Key Features
             1. **Data Analysis**
                - Data overview and statistics
