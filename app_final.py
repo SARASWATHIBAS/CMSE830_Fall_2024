@@ -30,6 +30,206 @@ from sklearn.model_selection import train_test_split
 from sklearn.cluster import KMeans
 from umap.umap_ import UMAP
 
+
+def calculate_risk_score(age, tumor_size, nodes_positive, grade):
+    """Calculate comprehensive risk score based on clinical parameters"""
+    # Normalize inputs
+    age_factor = age / 100
+    size_factor = tumor_size / 200
+    node_factor = nodes_positive / 50
+    grade_factor = int(grade) / 3
+
+    # Weighted calculation
+    risk_score = (
+                         0.25 * age_factor +
+                         0.35 * size_factor +
+                         0.25 * node_factor +
+                         0.15 * grade_factor
+                 ) * 100
+
+    return risk_score
+
+
+def predict_survival(age, stage, treatments):
+    """Generate survival predictions based on patient characteristics"""
+    # Base survival rate by stage
+    stage_rates = {
+        "I": 0.95,
+        "II": 0.85,
+        "III": 0.70,
+        "IV": 0.45
+    }
+
+    # Treatment impact factors
+    treatment_factors = {
+        "Surgery": 0.15,
+        "Chemotherapy": 0.12,
+        "Radiation": 0.10,
+        "Hormone Therapy": 0.08
+    }
+
+    # Calculate survival probability
+    base_rate = stage_rates[stage]
+    treatment_boost = sum(treatment_factors[t] for t in treatments)
+    age_factor = (100 - age) / 100
+
+    survival_rate = min(1.0, base_rate + treatment_boost) * age_factor
+
+    return generate_survival_curve(survival_rate)
+
+
+def generate_survival_curve(survival_rate):
+    """Generate 5-year survival curve data"""
+    months = range(0, 61)
+    survival_probs = [survival_rate * (1 - month / 120) for month in months]
+    return {'months': months, 'probability': survival_probs}
+
+
+def plot_survival_curve(survival_data):
+    """Create interactive survival curve plot"""
+    fig = go.Figure()
+    fig.add_trace(go.Scatter(
+        x=survival_data['months'],
+        y=survival_data['probability'],
+        mode='lines',
+        name='Survival Probability'
+    ))
+    fig.update_layout(
+        title='5-Year Survival Probability',
+        xaxis_title='Months',
+        yaxis_title='Survival Probability'
+    )
+    st.plotly_chart(fig)
+
+
+def display_survival_metrics(survival_data):
+    """Display key survival statistics"""
+    col1, col2, col3 = st.columns(3)
+    col1.metric("1-Year Survival", f"{survival_data['probability'][12]:.1%}")
+    col2.metric("3-Year Survival", f"{survival_data['probability'][36]:.1%}")
+    col3.metric("5-Year Survival", f"{survival_data['probability'][60]:.1%}")
+
+
+def generate_treatment_plans(age, stage, comorbidities):
+    """Generate personalized treatment plans"""
+    base_plans = {
+        "I": ["Surgery", "Radiation"],
+        "II": ["Surgery", "Chemotherapy", "Radiation"],
+        "III": ["Chemotherapy", "Surgery", "Radiation"],
+        "IV": ["Chemotherapy", "Targeted Therapy", "Palliative Care"]
+    }
+
+    # Adjust for age and comorbidities
+    plans = []
+    base_treatments = base_plans[stage]
+
+    # Generate multiple plan options
+    plans.append({
+        'name': 'Standard Protocol',
+        'treatments': base_treatments,
+        'effectiveness': calculate_effectiveness(base_treatments, age, comorbidities),
+        'risk_level': 'Moderate'
+    })
+
+    # Conservative option
+    conservative = [t for t in base_treatments if t not in ['Chemotherapy']]
+    plans.append({
+        'name': 'Conservative Approach',
+        'treatments': conservative,
+        'effectiveness': calculate_effectiveness(conservative, age, comorbidities),
+        'risk_level': 'Low'
+    })
+
+    return plans
+
+
+def calculate_effectiveness(treatments, age, comorbidities):
+    """Calculate treatment effectiveness score"""
+    base_score = len(treatments) * 20
+    age_factor = (100 - age) / 100
+    comorbidity_factor = 1 - (len(comorbidities) * 0.1)
+
+    return base_score * age_factor * comorbidity_factor
+
+
+def display_treatment_options(plans):
+    """Display treatment plans with interactive elements"""
+    for i, plan in enumerate(plans):
+        with st.expander(f"Treatment Plan {i + 1}: {plan['name']}"):
+            st.write("### Treatments")
+            for treatment in plan['treatments']:
+                st.write(f"- {treatment}")
+
+            st.write("### Metrics")
+            col1, col2 = st.columns(2)
+            col1.metric("Effectiveness Score", f"{plan['effectiveness']:.1f}")
+            col2.metric("Risk Level", plan['risk_level'])
+
+            st.write("### Additional Considerations")
+            st.write(get_treatment_considerations(plan))
+
+
+def get_treatment_considerations(plan):
+    """Generate treatment-specific considerations"""
+    considerations = {
+        'Standard Protocol': "Balanced approach with proven outcomes",
+        'Conservative Approach': "Minimizes treatment intensity while maintaining efficacy"
+    }
+    return considerations[plan['name']]
+
+
+def run_risk_assessment():
+    st.subheader("Patient Risk Calculator")
+
+    col1, col2 = st.columns(2)
+    with col1:
+        age = st.number_input("Patient Age", 18, 100)
+        tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
+        nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50)
+
+    with col2:
+        grade = st.selectbox("Tumor Grade", ["1", "2", "3"])
+        stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"])
+        er_status = st.selectbox("ER Status", ["Positive", "Negative"])
+
+    if st.button("Calculate Risk Score"):
+        risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
+        st.metric("Risk Score", f"{risk_score:.2f}")
+
+def run_survival_prediction():
+    st.subheader("Survival Prediction Tool")
+
+    # Patient characteristics
+    age = st.number_input("Age", 18, 100, 50)
+    stage = st.selectbox("Disease Stage", ["I", "II", "III", "IV"])
+    treatment = st.multiselect(
+        "Selected Treatments",
+        ["Surgery", "Chemotherapy", "Radiation", "Hormone Therapy"]
+    )
+
+    if st.button("Generate Prediction"):
+        survival_curve = predict_survival(age, stage, treatment)
+        plot_survival_curve(survival_curve)
+        display_survival_metrics(survival_curve)
+
+
+def run_treatment_planning():
+    st.subheader("Treatment Planning Assistant")
+
+    # Patient profile
+    st.write("### Patient Profile")
+    age = st.number_input("Age", 18, 100, 50)
+    stage = st.selectbox("Stage", ["I", "II", "III", "IV"])
+    comorbidities = st.multiselect(
+        "Comorbidities",
+        ["Diabetes", "Hypertension", "Heart Disease", "None"]
+    )
+
+    if st.button("Generate Treatment Plans"):
+        plans = generate_treatment_plans(age, stage, comorbidities)
+        display_treatment_options(plans)
+
+
 def production_space():
     def show_documentation():
         """Display comprehensive documentation and user guide"""
@@ -124,7 +324,7 @@ def production_space():
         if st.button("Calculate Risk Score"):
             risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
             st.metric("Risk Score", f"{risk_score:.2f}")
-            generate_clinical_report(risk_score)
+
 
 
 
@@ -583,7 +783,6 @@ def data_science_space():
                 """
             )
 
-
     # Advanced Visualizations Tab
     with tab4:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
@@ -599,11 +798,6 @@ def data_science_space():
         hue_feature = st.selectbox("Select Hue (Categorical)", selected_categorical, key="hue_feature")
 
         if feature_x and feature_y:
-            # Scatter plot for the selected features
-            # fig, ax = plt.subplots()
-            # sns.scatterplot(data=data, x=feature_x, y=feature_y, hue=data[hue_feature])
-            # ax.set_title(f'Scatter Plot: {feature_x} vs {feature_y} with hue {hue_feature}')
-            # st.pyplot(fig)
 
             fig = px.scatter(data, x=feature_x, y=feature_y, color=data[hue_feature], title="Interactive Scatter Plot")
             st.plotly_chart(fig)
@@ -1109,7 +1303,6 @@ def main():
         production_space()
     else:
         data_science_space()
-
 
 if __name__ == "__main__":
     main()
