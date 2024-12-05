@@ -191,34 +191,6 @@ def plot_survival_curve(survival_data):
 
     st.plotly_chart(fig)
 
-    # Add interactive elements
-    if st.checkbox("Show Detailed Statistics"):
-        display_survival_statistics(survival_data)
-
-
-def display_survival_statistics(survival_data):
-    """Display detailed survival statistics"""
-    col1, col2, col3 = st.columns(3)
-
-    with col1:
-        st.metric(
-            "1-Year Survival",
-            f"{survival_data['probability'][12]:.1%}"
-        )
-
-    with col2:
-        st.metric(
-            "3-Year Survival",
-            f"{survival_data['probability'][36]:.1%}"
-        )
-
-    with col3:
-        st.metric(
-            "5-Year Survival",
-            f"{survival_data['probability'][60]:.1%}"
-        )
-
-
 def display_survival_metrics(survival_data):
     """Display key survival statistics"""
     col1, col2, col3 = st.columns(3)
@@ -443,7 +415,7 @@ def production_space():
             st.metric("Risk Score", f"{risk_score:.2f}")
     elif tool_choice == "Survival Prediction":
         run_survival_prediction()
-    else:
+    elif tool_choice == "Treatment Planning":
         run_treatment_planning()
 
 
