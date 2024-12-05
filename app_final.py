@@ -319,6 +319,58 @@ def run_treatment_planning():
         display_treatment_options(plans)
 
 
+def display_input_requirements():
+    st.markdown("""
+    ## Input Requirements
+
+    ### Clinical Data Format
+    | Field | Type | Valid Range | Required |
+    |-------|------|-------------|----------|
+    | Age | Integer | 18-100 | Yes |
+    | Tumor Size | Float | 0.1-200.0 mm | Yes |
+    | Grade | Integer | 1-3 | Yes |
+    | Lymph Nodes | Integer | 0-50 | Yes |
+    | ER Status | String | Positive/Negative | Yes |
+    | HER2 Status | String | Positive/Negative | Yes |
+
+    ### Data Quality Standards
+    - Complete patient records
+    - Validated clinical measurements
+    - Standardized units
+    - Recent test results (< 30 days)
+    """)
+
+
+def display_expected_outputs():
+    st.markdown("""
+    ## Expected Outputs
+
+    ### 1. Risk Assessment
+    - Numerical risk score (0-100)
+    - Risk category classification
+    - Confidence intervals
+    - Comparative population metrics
+
+    ### 2. Survival Analysis
+    - 5-year survival probability
+    - Personalized survival curve
+    - Key milestone predictions
+    - Risk-adjusted outcomes
+
+    ### 3. Treatment Recommendations
+    - Ranked treatment options
+    - Expected effectiveness scores
+    - Side effect profiles
+    - Quality of life projections
+
+    ### 4. Clinical Reports
+    - Structured medical summary
+    - Evidence-based guidelines
+    - Treatment protocols
+    - Follow-up recommendations
+    """)
+
+
 def production_space():
     def show_documentation():
         """Display comprehensive documentation and user guide"""
@@ -387,6 +439,11 @@ def production_space():
             - Consider feature relationships before modeling
             """)
     st.header("Clinical Production Space")
+
+    display_input_requirements()
+
+    display_expected_outputs()
+
 
     tool_choice = st.selectbox(
         "Select Clinical Tool",
