@@ -454,8 +454,8 @@ def production_space():
 
 
     if tool_choice == "Risk Assessment":
-            st.subheader("Patient Risk Calculator")
-            col1, col2 = st.columns(2)
+        st.subheader("Patient Risk Calculator")
+        col1, col2 = st.columns(2)
 
         with col1:
             age = st.number_input("Patient Age", 18, 100)
