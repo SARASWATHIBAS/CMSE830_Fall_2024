@@ -88,8 +88,11 @@ def generate_survival_curve(survival_rate):
 def plot_survival_curve(survival_data):
     """Create interactive survival curve plot"""
     fig = go.Figure()
+    # Convert range to list for x values
+    x_values = list(survival_data['months'])
+
     fig.add_trace(go.Scatter(
-        x=survival_data['months'],
+        x=x_values,
         y=survival_data['probability'],
         mode='lines',
         name='Survival Probability'
