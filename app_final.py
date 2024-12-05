@@ -86,23 +86,137 @@ def generate_survival_curve(survival_rate):
 
 
 def plot_survival_curve(survival_data):
-    """Create interactive survival curve plot"""
+    """Create advanced interactive survival curve visualization"""
     fig = go.Figure()
-    # Convert range to list for x values
+
+    # Convert data
     x_values = list(survival_data['months'])
+    y_values = survival_data['probability']
+
+    # Main survival curve
+    fig.add_trace(go.Scatter(
+        x=x_values,
+        y=y_values,
+        mode='lines',
+        name='Survival Probability',
+        line=dict(color='#2E86C1', width=3)
+    ))
+
+    # Add confidence intervals
+    upper_ci = [min(1, p + 0.1) for p in y_values]
+    lower_ci = [max(0, p - 0.1) for p in y_values]
+
+    fig.add_trace(go.Scatter(
+        x=x_values + x_values[::-1],
+        y=upper_ci + lower_ci[::-1],
+        fill='toself',
+        fillcolor='rgba(46, 134, 193, 0.2)',
+        line=dict(color='rgba(255,255,255,0)'),
+        name='95% Confidence Interval'
+    ))
+
+    # Add risk stratification lines
+    fig.add_trace(go.Scatter(
+        x=x_values,
+        y=[0.75] * len(x_values),
+        mode='lines',
+        line=dict(color='green', dash='dash'),
+        name='High Survival'
+    ))
 
     fig.add_trace(go.Scatter(
         x=x_values,
-        y=survival_data['probability'],
+        y=[0.5] * len(x_values),
         mode='lines',
-        name='Survival Probability'
+        line=dict(color='orange', dash='dash'),
+        name='Moderate Risk'
     ))
+
+    # Add milestone markers
+    milestones = {
+        12: '1 Year',
+        36: '3 Years',
+        60: '5 Years'
+    }
+
+    milestone_x = []
+    milestone_y = []
+    milestone_text = []
+
+    for month, label in milestones.items():
+        milestone_x.append(month)
+        milestone_y.append(y_values[month])
+        milestone_text.append(label)
+
+    fig.add_trace(go.Scatter(
+        x=milestone_x,
+        y=milestone_y,
+        mode='markers+text',
+        marker=dict(size=10, symbol='diamond', color='#2E86C1'),
+        text=milestone_text,
+        textposition='top center',
+        name='Key Milestones'
+    ))
+
+    # Enhanced layout
     fig.update_layout(
-        title='5-Year Survival Probability',
+        title={
+            'text': '5-Year Survival Probability Analysis',
+            'y': 0.95,
+            'x': 0.5,
+            'xanchor': 'center',
+            'yanchor': 'top'
+        },
         xaxis_title='Months',
-        yaxis_title='Survival Probability'
+        yaxis_title='Survival Probability',
+        yaxis=dict(
+            tickformat='.0%',
+            range=[0, 1]
+        ),
+        hovermode='x unified',
+        legend=dict(
+            yanchor="top",
+            y=0.99,
+            xanchor="left",
+            x=0.01
+        ),
+        plot_bgcolor='white',
+        width=800,
+        height=500
     )
+
+    # Add gridlines
+    fig.update_xaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+    fig.update_yaxes(showgrid=True, gridwidth=1, gridcolor='LightGray')
+
     st.plotly_chart(fig)
+
+    # Add interactive elements
+    if st.checkbox("Show Detailed Statistics"):
+        display_survival_statistics(survival_data)
+
+
+def display_survival_statistics(survival_data):
+    """Display detailed survival statistics"""
+    col1, col2, col3 = st.columns(3)
+
+    with col1:
+        st.metric(
+            "1-Year Survival",
+            f"{survival_data['probability'][12]:.1%}"
+        )
+
+    with col2:
+        st.metric(
+            "3-Year Survival",
+            f"{survival_data['probability'][36]:.1%}"
+        )
+
+    with col3:
+        st.metric(
+            "5-Year Survival",
+            f"{survival_data['probability'][60]:.1%}"
+        )
 
 
 def display_survival_metrics(survival_data):
