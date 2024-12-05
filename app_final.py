@@ -331,7 +331,6 @@ def display_input_requirements():
     | Grade | Integer | 1-3 | Yes |
     | Lymph Nodes | Integer | 0-50 | Yes |
     | ER Status | String | Positive/Negative | Yes |
-    | HER2 Status | String | Positive/Negative | Yes |
 
     ### Data Quality Standards
     - Complete patient records
@@ -349,7 +348,6 @@ def display_expected_outputs():
     - Numerical risk score (0-100)
     - Risk category classification
     - Confidence intervals
-    - Comparative population metrics
 
     ### 2. Survival Analysis
     - 5-year survival probability
@@ -360,14 +358,7 @@ def display_expected_outputs():
     ### 3. Treatment Recommendations
     - Ranked treatment options
     - Expected effectiveness scores
-    - Side effect profiles
-    - Quality of life projections
 
-    ### 4. Clinical Reports
-    - Structured medical summary
-    - Evidence-based guidelines
-    - Treatment protocols
-    - Follow-up recommendations
     """)
 
 
@@ -380,6 +371,8 @@ def production_space():
 
             ## Overview
             This application provides comprehensive tools for analyzing breast cancer data through various statistical and machine learning approaches.
+            
+            ## Purpose
             The Production space is designed to address the challenge of predicting the likelihood of a person being diagnosed with breast cancer based on their specific characteristics. It also aims to raise awareness and provide foundational guidance to clinical professionals on potential steps for effective treatment planning.
             ## Key Features
             1. **Data Analysis**
@@ -629,12 +622,12 @@ def data_science_space():
     # Create tabs with descriptive names
     tabs = st.tabs([
         "Data Overview", "Search","Advanced Data Cleaning Preprocessing", "Visualizations","Advanced Data Analysis", "Data Processing & Feature Engineering",
-        "Modeling",
+        "Modeling","Technical Documentation"
 
     ])
 
     # Assign tabs to variables
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = tabs
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7,tab8 = tabs
 
     # Use a session state to store the active tab
     if "active_tab" not in st.session_state:
@@ -1438,6 +1431,178 @@ def data_science_space():
                               title=f'Learning Curves - {selected_model}',
                               labels={'x': 'Training Examples', 'y': 'Score'})
                 st.plotly_chart(fig)
+
+    with tab8:
+        st.markdown("""
+        # Technical Documentation
+
+        ## System Architecture
+
+        ### Core Components
+        - **Frontend**: Streamlit-based interactive web interface
+        - **Data Processing**: Pandas, NumPy, SciPy
+        - **Machine Learning**: Scikit-learn, XGBoost
+        - **Visualization**: Plotly, Seaborn, Matplotlib
+
+        ### Module Structure
+        ```
+        main()
+        ├── production_space()
+        │   ├── risk_assessment()
+        │   ├── survival_prediction()
+        │   └── treatment_planning()
+        └── data_science_space()
+            ├── data_overview()
+            ├── search()
+            ├── advanced_cleaning()
+            ├── visualizations()
+            ├── advanced_analysis()
+            ├── feature_engineering()
+            └── modeling()
+        ```
+
+        ## Data Processing Pipeline
+
+        ### Data Preprocessing
+        - Standard scaling implementation
+        - Missing value handling with KNN imputation
+        - Categorical encoding
+        - Feature normalization
+
+        ### Feature Engineering
+        - Age grouping with custom bins
+        - Risk score calculation using weighted features
+        - Interaction features generation
+        - Dimensionality reduction (PCA, t-SNE, UMAP)
+
+        ## Machine Learning Models
+
+        ### Classification Models
+        - Random Forest Classifier
+        - XGBoost Classifier
+        - Logistic Regression
+
+        ### Regression Models
+        - Linear Regression
+        - Random Forest Regressor
+        - XGBoost Regressor
+
+        ### Clustering
+        - K-means clustering with elbow method
+        - Silhouette score evaluation
+
+        ## Key Functions
+
+        ### Risk Assessment
+        ```python
+        def calculate_risk_score(age, tumor_size, nodes_positive, grade):
+            '''
+            Calculate patient risk score based on clinical parameters
+
+            Parameters:
+            - age: int (18-100)
+            - tumor_size: float (0.1-200.0 mm)
+            - nodes_positive: int (0-50)
+            - grade: int (1-3)
+
+            Returns:
+            - risk_score: float (0-100)
+            '''
+        ```
+
+        ### Survival Prediction
+        ```python
+        def predict_survival(age, stage, treatments):
+            '''
+            Generate survival predictions
+
+            Parameters:
+            - age: int
+            - stage: str ('I', 'II', 'III', 'IV')
+            - treatments: list[str]
+
+            Returns:
+            - dict: {'months': list, 'probability': list}
+            '''
+        ```
+
+        ## Visualization Components
+
+        ### Interactive Plots
+        - Scatter plots with dynamic feature selection
+        - Correlation heatmaps
+        - Distribution analysis
+        - Survival curves
+        - Model performance comparisons
+
+        ### Custom Styling
+        ```python
+        fig.update_layout(
+            title_text="Analysis Title",
+            xaxis_title="X Label",
+            yaxis_title="Y Label",
+            plot_bgcolor='white',
+            width=800,
+            height=500
+        )
+        ```
+
+        ## Error Handling
+
+        ### Data Validation
+        - Required fields validation
+        - Value range checks
+        - Data type verification
+
+        ### Model Error Handling
+        - Cross-validation implementation
+        - Model performance monitoring
+        - Prediction confidence intervals
+
+        ## Performance Optimization
+
+        ### Techniques
+        - Data caching with @st.cache_data
+        - Efficient data transformations
+        - Streamlined visualization rendering
+
+        ### Memory Management
+        - Selective feature loading
+        - Batch processing for large datasets
+        - Resource cleanup
+
+        ## Dependencies
+        - streamlit==1.24.0
+        - pandas==1.5.3
+        - numpy==1.24.3
+        - scikit-learn==1.2.2
+        - plotly==5.14.1
+        - xgboost==1.7.5
+        - seaborn==0.12.2
+        - matplotlib==3.7.1
+
+        ## Deployment
+
+        ### Environment Setup
+        ```bash
+        python -m venv venv
+        source venv/bin/activate
+        pip install -r requirements.txt
+        ```
+
+        ### Running the Application
+        ```bash
+        streamlit run app.py
+        ```
+
+        ## Future Enhancements
+        1. Additional model architectures
+        2. Enhanced feature engineering
+        3. Advanced visualization capabilities
+        4. Improved error handling
+        5. Extended documentation coverage
+        """)
+
 
 def main():
     st.title("Breast Cancer Analysis Platform")
