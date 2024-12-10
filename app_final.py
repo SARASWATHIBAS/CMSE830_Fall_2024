@@ -514,6 +514,68 @@ def production_space():
         run_treatment_planning()
 
 
+def create_3d_scatter(data, x_col, y_col, z_col, color_col=None, size_col=None):
+    """
+    Creates an interactive 3D scatter plot with customizable features
+    """
+    fig = px.scatter_3d(
+        data,
+        x=x_col,
+        y=y_col,
+        z=z_col,
+        color=color_col,
+        size=size_col,
+        opacity=0.7,
+        title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}",
+        labels={
+            x_col: x_col.replace('_', ' ').title(),
+            y_col: y_col.replace('_', ' ').title(),
+            z_col: z_col.replace('_', ' ').title()
+        }
+    )
+
+    fig.update_layout(
+        scene=dict(
+            xaxis_title=x_col,
+            yaxis_title=y_col,
+            zaxis_title=z_col
+        ),
+        width=800,
+        height=800
+    )
+
+    return fig
+
+
+def create_3d_surface(data, x_col, y_col, z_col):
+    """
+    Creates an interactive 3D surface plot
+    """
+    # Create a pivot table for surface plotting
+    pivot_data = data.pivot_table(
+        values=z_col,
+        index=x_col,
+        columns=y_col,
+        aggfunc='mean'
+    )
+
+    fig = go.Figure(data=[go.Surface(z=pivot_data.values)])
+
+    fig.update_layout(
+        title=f'3D Surface Plot: {z_col} by {x_col} and {y_col}',
+        scene=dict(
+            xaxis_title=x_col,
+            yaxis_title=y_col,
+            zaxis_title=z_col
+        ),
+        width=800,
+        height=800
+    )
+
+    return fig
+
+
+
 def data_science_space():
     st.header("Data Science Research Space")
 
@@ -1069,6 +1131,52 @@ def data_science_space():
                                            marginal_x="box", marginal_y="violin",
                                            title="Joint Distribution Plot")
             st.plotly_chart(joint_fig)
+        st.subheader("3D Visualization Analysis")
+
+        col1, col2 = st.columns(2)
+
+        with col1:
+            x_feature = st.selectbox("Select X Feature", selected_numeric, key='3d_x')
+            y_feature = st.selectbox("Select Y Feature",
+                                     [col for col in selected_numeric if col != x_feature],
+                                     key='3d_y')
+            z_feature = st.selectbox("Select Z Feature",
+                                     [col for col in selected_numeric if col not in [x_feature, y_feature]],
+                                     key='3d_z')
+
+            color_feature = st.selectbox("Select Color Feature", selected_categorical, key='3d_color')
+            size_feature = st.selectbox("Select Size Feature", selected_numeric, key='3d_size')
+
+        with col2:
+            plot_type = st.radio("Select 3D Plot Type",
+                                 ["Scatter", "Surface"],
+                                 key='3d_type')
+
+        if plot_type == "Scatter":
+            fig_3d = create_3d_scatter(data, x_feature, y_feature, z_feature,
+                                       color_feature, size_feature)
+            st.plotly_chart(fig_3d, use_container_width=True)
+
+            st.write("### 3D Scatter Plot Features:")
+            st.write("""
+            - Drag to rotate the view
+            - Scroll to zoom in/out
+            - Double click to reset view
+            - Hover for point details
+            - Use legend to filter categories
+            """)
+        else:
+            fig_surface = create_3d_surface(data, x_feature, y_feature, z_feature)
+            st.plotly_chart(fig_surface, use_container_width=True)
+
+            st.write("### 3D Surface Plot Features:")
+            st.write("""
+            - Shows relationships between three variables
+            - Height represents z-value
+            - Color intensity indicates value magnitude
+            - Interactive rotation and zoom
+            """)
+
         # Closing message
     st.write("### Thank you for using the Breast Cancer Analysis App!")
 
@@ -1432,7 +1540,7 @@ def data_science_space():
             selected_features = st.multiselect(
                 "Select Features for Clustering (Choose 2)",
                 options=numerical_features,
-                default=["Tumor Size", "Age"]
+                default=["Tumor Size", "Age","Reginol Node Examined"]
             )
 
             if len(selected_features) == 2:
