@@ -510,6 +510,62 @@ def create_pair_plot(data, selected_numeric, hue_feature):
     plt.close()
 
 
+def get_visualization_insights(viz_type, dist_type, plot_3d_type, feature_x, feature_y, z_feature=None):
+    insights = {
+        "Scatter Plot Analysis": f"""
+        #### Key Insights for {feature_x} vs {feature_y}:
+        1. The scatter pattern between {feature_x} and {feature_y} reveals their relationship strength and direction.
+        2. Clustered points in the {feature_x}-{feature_y} space indicate potential subgroups worth investigating.
+        """,
+
+        "Violin": f"""
+        #### Distribution Insights for {feature_x}:
+        1. The violin width shows the concentration of {feature_x} values, highlighting common ranges.
+        2. Shape variations in {feature_x} distribution indicate potential data patterns and outliers.
+        """,
+
+        "Box Plot": f"""
+        #### Box Plot Insights for {feature_x}:
+        1. The quartile boundaries for {feature_x} show its spread and central tendency.
+        2. Points beyond {feature_x}'s whiskers represent unique cases requiring attention.
+        """,
+
+        "Pair Plot": f"""
+        #### Pair Plot Insights for Selected Features:
+        1. The diagonal distributions show how {feature_x} and {feature_y} are individually distributed.
+        2. The scatter matrices reveal relationships between {feature_x}, {feature_y} and other variables.
+        """,
+
+        "3D Scatter": f"""
+        #### 3D Scatter Insights for {feature_x}, {feature_y}, and {z_feature}:
+        1. The spatial arrangement shows how {feature_x}, {feature_y}, and {z_feature} interact.
+        2. Color patterns highlight groupings across these three dimensions.
+        """,
+
+        "Surface": f"""
+        #### Surface Plot Insights for {feature_x}, {feature_y}, and {z_feature}:
+        1. Surface heights show how {z_feature} varies with changes in {feature_x} and {feature_y}.
+        2. Color intensities highlight key regions in the {feature_x}-{feature_y} plane.
+        """,
+
+        "Radius": f"""
+        #### Radius Plot Insights for Selected Features:
+        1. The shape symmetry shows balance across {feature_x}, {feature_y} and other selected features.
+        2. Pattern overlaps indicate relationships between feature groups.
+        """
+    }
+
+    # Return appropriate insight based on visualization type
+    if viz_type == "Scatter Plot Analysis" or viz_type == "All Plots":
+        return insights["Scatter Plot Analysis"]
+    elif viz_type == "Distribution Plots":
+        return insights.get(dist_type, insights["Box Plot"])
+    elif viz_type == "3D Visualizations":
+        return insights["3D Scatter"] if plot_3d_type == "Scatter" else insights["Surface"]
+    elif viz_type == "Radius Plot":
+        return insights["Radius"]
+
+
 def production_space():
     def show_documentation():
         """Display comprehensive documentation and user guide"""
@@ -786,7 +842,7 @@ def data_science_space():
 
     # Default selections for categorical and numeric columns
     default_categorical = categorical_filter[:2]  # Select the first 2 categorical columns as default
-    default_numeric = numeric_filter[:2]  # Select the first 2 numeric columns as default
+    default_numeric = numeric_filter[:3]  # Select the first 2 numeric columns as default
 
     # Store selections in session state to maintain state across runs
     if 'selected_categorical' not in st.session_state:
@@ -1172,6 +1228,13 @@ def data_science_space():
 
                 # Dynamic interpretation
                 interpret_correlation(correlation, feature_x, feature_y)
+                # After each visualization
+                insights = get_visualization_insights(
+                    viz_type=viz_type,
+                    feature_x=feature_x,
+                    feature_y=feature_y
+                )
+                st.markdown(insights)
 
         if viz_type == "Distribution Plots" or viz_type == "All Plots":
             st.subheader("Distribution Analysis")
@@ -1188,6 +1251,14 @@ def data_science_space():
                 create_box_plot(data, numerical_feature, categorical_feature, hue_feature)
             elif dist_type == "Pair Plot":
                 create_pair_plot(data, selected_numeric, hue_feature)
+                # After each visualization
+                insights = get_visualization_insights(
+                    viz_type=viz_type,
+                    dist_type=dist_type if 'dist_type' in locals() else None,
+                    feature_x=feature_x,
+                    feature_y=feature_y
+                )
+                st.markdown(insights)
 
         if viz_type == "Correlation Analysis" or viz_type == "All Plots":
             st.subheader("Correlation Analysis")
@@ -1214,6 +1285,16 @@ def data_science_space():
             else:
                 fig_surface = create_3d_surface(data, feature_x, feature_y, z_feature)
                 st.plotly_chart(fig_surface)
+            # After each visualization
+            insights = get_visualization_insights(
+                viz_type=viz_type,
+                dist_type=dist_type if 'dist_type' in locals() else None,
+                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
+                feature_x=feature_x,
+                feature_y=feature_y,
+                z_feature=z_feature if 'z_feature' in locals() else None
+            )
+            st.markdown(insights)
 
         if viz_type == "Radius Plot" or viz_type == "All Plots":
             st.subheader("Radius Plot Analysis")
@@ -1233,6 +1314,16 @@ def data_science_space():
                 radius_fig = create_radius_plot(data, selected_features,
                                                 radius_hue if use_hue else None)
                 st.plotly_chart(radius_fig)
+            # After each visualization
+            insights = get_visualization_insights(
+                viz_type=viz_type,
+                dist_type=dist_type if 'dist_type' in locals() else None,
+                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
+                feature_x=feature_x,
+                feature_y=feature_y,
+                z_feature=z_feature if 'z_feature' in locals() else None
+            )
+            st.markdown(insights)
 
         # Interactive elements for all plots
         st.sidebar.markdown("### Plot Controls")
