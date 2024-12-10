@@ -617,24 +617,26 @@ def production_space():
         run_treatment_planning()
 
 
-def create_3d_scatter(data, x_col, y_col, z_col, color_col=None, size_col=None):
+def create_3d_scatter(data, x_col, y_col, z_col, color_col):
     """
-    Creates an interactive 3D scatter plot with customizable features
+    Creates an interactive 3D scatter plot with formatted labels
     """
+    # Create formatted labels dictionary
+    labels = {
+        x_col: x_col,
+        y_col: y_col,
+        z_col: z_col
+    }
+
     fig = px.scatter_3d(
         data,
         x=x_col,
         y=y_col,
         z=z_col,
         color=color_col,
-        size=size_col,
         opacity=0.7,
         title=f"3D Scatter Plot: {x_col} vs {y_col} vs {z_col}",
-        labels={
-            x_col: x_col.replace('_', ' ').title(),
-            y_col: y_col.replace('_', ' ').title(),
-            z_col: z_col.replace('_', ' ').title()
-        }
+        labels=labels
     )
 
     fig.update_layout(
@@ -1085,7 +1087,7 @@ def data_science_space():
             if imbalanced:
                 num_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=3)
                 kmeans = KMeans(n_clusters=num_clusters, random_state=42)
-                cluster_labels = kmeans.fit_predict(scaled_data)
+                cluster_labels = kmeans.fit_predict(data_scaled)
 
                 # Add cluster labels to the dataset
                 data["Cluster"] = cluster_labels
