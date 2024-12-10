@@ -362,6 +362,51 @@ def display_expected_outputs():
     """)
 
 
+def create_radius_plot(data, selected_features, hue_feature=None):
+    """
+    Creates an interactive radius plot showing feature relationships
+    """
+    # Normalize the features for better visualization
+    normalized_data = pd.DataFrame()
+    for feature in selected_features:
+        normalized_data[feature] = (data[feature] - data[feature].min()) / (data[feature].max() - data[feature].min())
+
+    # Create the radius plot
+    fig = go.Figure()
+
+    if hue_feature:
+        for category in data[hue_feature].unique():
+            mask = data[hue_feature] == category
+            values = normalized_data[mask][selected_features].mean()
+
+            fig.add_trace(go.Scatterpolar(
+                r=values,
+                theta=selected_features,
+                name=str(category),
+                fill='toself'
+            ))
+    else:
+        values = normalized_data[selected_features].mean()
+        fig.add_trace(go.Scatterpolar(
+            r=values,
+            theta=selected_features,
+            fill='toself'
+        ))
+
+    fig.update_layout(
+        polar=dict(
+            radialaxis=dict(
+                visible=True,
+                range=[0, 1]
+            )
+        ),
+        showlegend=True,
+        title="Feature Radius Plot"
+    )
+
+    return fig
+
+
 def production_space():
     def show_documentation():
         """Display comprehensive documentation and user guide"""
@@ -988,6 +1033,51 @@ def data_science_space():
             sns.boxplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature_plot], ax=ax)
             ax.set_title(f'Box Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
             st.pyplot(fig)
+
+        def create_radius_plot(data, selected_features, hue_feature=None):
+            """
+            Creates an interactive radius plot showing feature relationships
+            """
+            # Normalize the features for better visualization
+            normalized_data = pd.DataFrame()
+            for feature in selected_features:
+                normalized_data[feature] = (data[feature] - data[feature].min()) / (
+                            data[feature].max() - data[feature].min())
+
+            # Create the radius plot
+            fig = go.Figure()
+
+            if hue_feature:
+                for category in data[hue_feature].unique():
+                    mask = data[hue_feature] == category
+                    values = normalized_data[mask][selected_features].mean()
+
+                    fig.add_trace(go.Scatterpolar(
+                        r=values,
+                        theta=selected_features,
+                        name=str(category),
+                        fill='toself'
+                    ))
+            else:
+                values = normalized_data[selected_features].mean()
+                fig.add_trace(go.Scatterpolar(
+                    r=values,
+                    theta=selected_features,
+                    fill='toself'
+                ))
+
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 1]
+                    )
+                ),
+                showlegend=True,
+                title="Feature Radius Plot"
+            )
+
+            return fig
 
         # Closing message
     st.write("### Thank you for using the Breast Cancer Analysis App!")
