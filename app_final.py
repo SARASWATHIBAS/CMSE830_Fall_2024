@@ -1053,7 +1053,7 @@ def data_science_space():
                 selected_categorical
             )
 
-        if len(selected_features) > 2:
+        if len(selected_features) > 1:
             radius_fig = create_radius_plot(data, selected_features, hue_feature)
             st.plotly_chart(radius_fig, use_container_width=True)
 
@@ -1064,7 +1064,11 @@ def data_science_space():
             - Larger area indicates higher overall values
             - Compare shapes to identify pattern differences
             """)
-
+        if st.checkbox("Show Joint Plot"):
+            joint_fig = px.density_heatmap(data, x=feature_x, y=feature_y,
+                                           marginal_x="box", marginal_y="violin",
+                                           title="Joint Distribution Plot")
+            st.plotly_chart(joint_fig)
         # Closing message
     st.write("### Thank you for using the Breast Cancer Analysis App!")
 
