@@ -1034,50 +1034,36 @@ def data_science_space():
             ax.set_title(f'Box Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
             st.pyplot(fig)
 
-        def create_radius_plot(data, selected_features, hue_feature=None):
-            """
-            Creates an interactive radius plot showing feature relationships
-            """
-            # Normalize the features for better visualization
-            normalized_data = pd.DataFrame()
-            for feature in selected_features:
-                normalized_data[feature] = (data[feature] - data[feature].min()) / (
-                            data[feature].max() - data[feature].min())
+        # In your visualization tab
+        st.subheader("Radius Plot Analysis")
 
-            # Create the radius plot
-            fig = go.Figure()
+        # Feature selection
+        selected_features = st.multiselect(
+            "Select Features for Radius Plot",
+            selected_numeric,
+            default=selected_numeric[:5]
+        )
 
-            if hue_feature:
-                for category in data[hue_feature].unique():
-                    mask = data[hue_feature] == category
-                    values = normalized_data[mask][selected_features].mean()
-
-                    fig.add_trace(go.Scatterpolar(
-                        r=values,
-                        theta=selected_features,
-                        name=str(category),
-                        fill='toself'
-                    ))
-            else:
-                values = normalized_data[selected_features].mean()
-                fig.add_trace(go.Scatterpolar(
-                    r=values,
-                    theta=selected_features,
-                    fill='toself'
-                ))
-
-            fig.update_layout(
-                polar=dict(
-                    radialaxis=dict(
-                        visible=True,
-                        range=[0, 1]
-                    )
-                ),
-                showlegend=True,
-                title="Feature Radius Plot"
+        # Optional hue feature
+        use_hue = st.checkbox("Add categorical comparison")
+        hue_feature = None
+        if use_hue:
+            hue_feature = st.selectbox(
+                "Select Category for Comparison",
+                selected_categorical
             )
 
-            return fig
+        if len(selected_features) > 2:
+            radius_fig = create_radius_plot(data, selected_features, hue_feature)
+            st.plotly_chart(radius_fig, use_container_width=True)
+
+            st.write("### Radius Plot Interpretation")
+            st.write("""
+            - Each axis represents a selected feature
+            - Values are normalized to [0,1] range for fair comparison
+            - Larger area indicates higher overall values
+            - Compare shapes to identify pattern differences
+            """)
 
         # Closing message
     st.write("### Thank you for using the Breast Cancer Analysis App!")
