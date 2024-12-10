@@ -407,6 +407,109 @@ def create_radius_plot(data, selected_features, hue_feature=None):
     return fig
 
 
+def interpret_correlation(correlation, feature_x, feature_y):
+    """Provides detailed correlation interpretation"""
+    st.write(f"### Correlation Analysis: {feature_x} vs {feature_y}")
+
+    # Correlation strength interpretation
+    if abs(correlation) >= 0.8:
+        strength = "Very Strong"
+    elif abs(correlation) >= 0.6:
+        strength = "Strong"
+    elif abs(correlation) >= 0.4:
+        strength = "Moderate"
+    elif abs(correlation) >= 0.2:
+        strength = "Weak"
+    else:
+        strength = "Very Weak"
+
+    # Direction interpretation
+    direction = "Positive" if correlation > 0 else "Negative"
+
+    st.write(f"""
+    #### Strength: {strength} {direction} Correlation ({correlation:.3f})
+
+    Key Insights:
+    - The relationship between these features is {strength.lower()}
+    - As {feature_x} increases, {feature_y} tends to {'increase' if correlation > 0 else 'decrease'}
+    - This correlation explains {(correlation ** 2 * 100):.1f}% of the variance
+    """)
+
+
+def create_violin_plot(data, numerical_feature, categorical_feature, hue_feature):
+    """Creates an enhanced violin plot with statistical annotations"""
+    fig = plt.figure(figsize=(12, 6))
+
+    # Create violin plot with swarm overlay
+    sns.violinplot(data=data, x=categorical_feature, y=numerical_feature,
+                   hue=hue_feature, split=True)
+    sns.swarmplot(data=data, x=categorical_feature, y=numerical_feature,
+                  color="white", alpha=0.5, size=4)
+
+    plt.title(f'Distribution of {numerical_feature} by {categorical_feature}')
+    plt.xticks(rotation=45)
+
+    # Add statistical annotations
+    categories = data[categorical_feature].unique()
+    means = data.groupby(categorical_feature)[numerical_feature].mean()
+
+    for i, cat in enumerate(categories):
+        plt.text(i, means[cat], f'μ={means[cat]:.2f}',
+                 horizontalalignment='center', verticalalignment='bottom')
+
+    st.pyplot(fig)
+    plt.close()
+
+
+def create_box_plot(data, numerical_feature, categorical_feature, hue_feature):
+    """Creates an enhanced box plot with statistical insights"""
+    fig = plt.figure(figsize=(12, 6))
+
+    # Create box plot with points
+    sns.boxplot(data=data, x=categorical_feature, y=numerical_feature,
+                hue=hue_feature, showfliers=True)
+
+    plt.title(f'Box Plot: {numerical_feature} by {categorical_feature}')
+    plt.xticks(rotation=45)
+
+    # Add statistical summary
+    stats = data.groupby(categorical_feature)[numerical_feature].describe()
+    st.write("### Statistical Summary")
+    st.dataframe(stats)
+
+    st.pyplot(fig)
+    plt.close()
+
+
+def create_pair_plot(data, selected_numeric, hue_feature):
+    """Creates an enhanced pair plot with customizable features"""
+    # Limit to manageable number of features for performance
+    if len(selected_numeric) > 5:
+        st.warning("Limiting to first 5 numeric features for clarity")
+        selected_numeric = selected_numeric[:5]
+
+    fig = sns.pairplot(data[selected_numeric + [hue_feature]],
+                       hue=hue_feature,
+                       diag_kind="kde",
+                       plot_kws={'alpha': 0.6},
+                       height=2.5)
+
+    fig.fig.suptitle("Pair-wise Feature Relationships", y=1.02)
+
+    # Add correlation coefficients
+    for i in range(len(selected_numeric)):
+        for j in range(len(selected_numeric)):
+            if i != j:
+                corr = data[selected_numeric[i]].corr(data[selected_numeric[j]])
+                fig.axes[i, j].annotate(f'ρ={corr:.2f}',
+                                        xy=(0.5, 0.9),
+                                        xycoords='axes fraction',
+                                        ha='center')
+
+    st.pyplot(fig)
+    plt.close()
+
+
 def production_space():
     def show_documentation():
         """Display comprehensive documentation and user guide"""
