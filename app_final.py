@@ -1036,149 +1036,106 @@ def data_science_space():
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         st.subheader("Advanced Visualizations")
 
-        # Select features for dynamic plots
-        feature_x = st.selectbox("Select Feature X", selected_numeric, key="feature_x")
-
-        # Exclude the selected X feature from Y's options
-        remaining_features_y = [col for col in selected_numeric if col != feature_x]
-        feature_y = st.selectbox("Select Feature Y", remaining_features_y, key="feature_y")
-        # Hue feature selection
-        hue_feature = st.selectbox("Select Hue (Categorical)", selected_categorical, key="hue_feature")
-
-        if feature_x and feature_y:
-
-            fig = px.scatter(data, x=feature_x, y=feature_y, color=data[hue_feature], title="Interactive Scatter Plot")
-            st.plotly_chart(fig)
-
-            st.write("### Interpretation:")
-            st.write("The interactive scatter plot allows users to hover over points for more information.")
-
-            # Calculate and display correlation
-            correlation = data[feature_x].corr(data[feature_y])
-            st.write(f"### I give you dynamic correlation interpretation")
-            st.write(f"### Correlation Coefficient between {feature_x} and {feature_y}: {correlation:.2f}")
-
-            # Interpretation
-            if correlation > 0.5:
-                st.write("### Interpretation: Strong positive relationship.")
-            elif correlation < -0.5:
-                st.write("### Interpretation: Strong negative relationship.")
-            else:
-                st.write("### Interpretation: Weak or no relationship.")
-
-        # Additional visualizations
-        if st.checkbox("Show Pair Plot"):
-            st.subheader("Pair Plot")
-            sns.pairplot(data[selected_numeric + [hue_feature]], hue=hue_feature)
-            st.pyplot()
-
-        # Violin Plot for two variables
-        st.subheader("Violin Plot")
-        numerical_feature = st.selectbox("Select Numerical Feature", numeric_filter)
-        categorical_feature = st.selectbox("Select Categorical Feature", categorical_filter)
-        hue_feature_plot = st.selectbox("Select Hue feature", selected_categorical)
-
-        show_violin = st.checkbox("Show Violin Plot")
-
-        if show_violin and numerical_feature and categorical_feature:
-            fig, ax = plt.subplots()
-            sns.violinplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature_plot], ax=ax)
-            ax.set_title(f'Violin Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
-            st.pyplot(fig)
-
-        # Box Plot for two variables
-        st.subheader("Box Plot")
-        show_box = st.checkbox("Show Box Plot")
-
-        if show_box and numerical_feature and categorical_feature:
-            fig, ax = plt.subplots()
-            sns.boxplot(x=data[categorical_feature], y=data[numerical_feature], hue=data[hue_feature_plot], ax=ax)
-            ax.set_title(f'Box Plot of {numerical_feature} by {categorical_feature} with hue {hue_feature_plot}')
-            st.pyplot(fig)
-
-        # In your visualization tab
-        st.subheader("Radius Plot Analysis")
-
-        # Feature selection
-        selected_features = st.multiselect(
-            "Select Features for Radius Plot",
-            selected_numeric,
-            default=selected_numeric[:5]
+        # Main visualization selector
+        viz_type = st.selectbox(
+            "Select Visualization Type",
+            ["Scatter Plot Analysis",
+             "Distribution Plots",
+             "Correlation Analysis",
+             "3D Visualizations",
+             "Radius Plot",
+             "All Plots"]
         )
 
-        # Optional hue feature
-        use_hue = st.checkbox("Add categorical comparison")
-        hue_feature = None
-        if use_hue:
-            hue_feature = st.selectbox(
-                "Select Category for Comparison",
-                selected_categorical
+        # Base feature selection
+        feature_x = st.selectbox("Select Feature X", selected_numeric, key="feature_x")
+        remaining_features_y = [col for col in selected_numeric if col != feature_x]
+        feature_y = st.selectbox("Select Feature Y", remaining_features_y, key="feature_y")
+        hue_feature = st.selectbox("Select Hue (Categorical)", selected_categorical, key="hue_feature")
+
+        if viz_type == "Scatter Plot Analysis" or viz_type == "All Plots":
+            st.subheader("Scatter Plot Analysis")
+            # Scatter plot with correlation
+            if feature_x and feature_y:
+                fig = px.scatter(data, x=feature_x, y=feature_y,
+                                 color=data[hue_feature],
+                                 title="Interactive Scatter Plot")
+                st.plotly_chart(fig)
+
+                correlation = data[feature_x].corr(data[feature_y])
+                st.metric("Correlation Coefficient", f"{correlation:.2f}")
+
+                # Dynamic interpretation
+                interpret_correlation(correlation, feature_x, feature_y)
+
+        if viz_type == "Distribution Plots" or viz_type == "All Plots":
+            st.subheader("Distribution Analysis")
+
+            dist_type = st.selectbox("Select Distribution Plot Type",
+                                     ["Violin Plot", "Box Plot", "Pair Plot"])
+
+            numerical_feature = st.selectbox("Select Numerical Feature", numeric_filter)
+            categorical_feature = st.selectbox("Select Categorical Feature", categorical_filter)
+
+            if dist_type == "Violin Plot":
+                create_violin_plot(data, numerical_feature, categorical_feature, hue_feature)
+            elif dist_type == "Box Plot":
+                create_box_plot(data, numerical_feature, categorical_feature, hue_feature)
+            elif dist_type == "Pair Plot":
+                create_pair_plot(data, selected_numeric, hue_feature)
+
+        if viz_type == "Correlation Analysis" or viz_type == "All Plots":
+            st.subheader("Correlation Analysis")
+
+            if st.checkbox("Show Joint Plot"):
+                joint_fig = px.density_heatmap(data, x=feature_x, y=feature_y,
+                                               marginal_x="box", marginal_y="violin",
+                                               title="Joint Distribution Plot")
+                st.plotly_chart(joint_fig)
+
+        if viz_type == "3D Visualizations" or viz_type == "All Plots":
+            st.subheader("3D Analysis")
+
+            z_feature = st.selectbox("Select Z Feature",
+                                     [col for col in selected_numeric
+                                      if col not in [feature_x, feature_y]])
+
+            plot_3d_type = st.radio("Select 3D Plot Type", ["Scatter", "Surface"])
+
+            if plot_3d_type == "Scatter":
+                fig_3d = create_3d_scatter(data, feature_x, feature_y, z_feature,
+                                           hue_feature, size_feature=feature_x)
+                st.plotly_chart(fig_3d)
+            else:
+                fig_surface = create_3d_surface(data, feature_x, feature_y, z_feature)
+                st.plotly_chart(fig_surface)
+
+        if viz_type == "Radius Plot" or viz_type == "All Plots":
+            st.subheader("Radius Plot Analysis")
+
+            selected_features = st.multiselect(
+                "Select Features for Radius Plot",
+                selected_numeric,
+                default=selected_numeric[:5]
             )
 
-        if len(selected_features) > 1:
-            radius_fig = create_radius_plot(data, selected_features, hue_feature)
-            st.plotly_chart(radius_fig, use_container_width=True)
+            use_hue = st.checkbox("Add categorical comparison")
+            if use_hue:
+                radius_hue = st.selectbox("Select Category for Comparison",
+                                          selected_categorical)
 
-            st.write("### Radius Plot Interpretation")
-            st.write("""
-            - Each axis represents a selected feature
-            - Values are normalized to [0,1] range for fair comparison
-            - Larger area indicates higher overall values
-            - Compare shapes to identify pattern differences
-            """)
-        if st.checkbox("Show Joint Plot"):
-            joint_fig = px.density_heatmap(data, x=feature_x, y=feature_y,
-                                           marginal_x="box", marginal_y="violin",
-                                           title="Joint Distribution Plot")
-            st.plotly_chart(joint_fig)
-        st.subheader("3D Visualization Analysis")
+            if len(selected_features) > 1:
+                radius_fig = create_radius_plot(data, selected_features,
+                                                radius_hue if use_hue else None)
+                st.plotly_chart(radius_fig)
 
-        col1, col2 = st.columns(2)
+        # Interactive elements for all plots
+        st.sidebar.markdown("### Plot Controls")
+        if st.sidebar.checkbox("Show Plot Settings"):
+            st.sidebar.slider("Plot Opacity", 0.0, 1.0, 0.7)
+            st.sidebar.color_picker("Pick Plot Color", "#1f77b4")
 
-        with col1:
-            x_feature = st.selectbox("Select X Feature", selected_numeric, key='3d_x')
-            y_feature = st.selectbox("Select Y Feature",
-                                     [col for col in selected_numeric if col != x_feature],
-                                     key='3d_y')
-            z_feature = st.selectbox("Select Z Feature",
-                                     [col for col in selected_numeric if col not in [x_feature, y_feature]],
-                                     key='3d_z')
-
-            color_feature = st.selectbox("Select Color Feature", selected_categorical, key='3d_color')
-            size_feature = st.selectbox("Select Size Feature", selected_numeric, key='3d_size')
-
-        with col2:
-            plot_type = st.radio("Select 3D Plot Type",
-                                 ["Scatter", "Surface"],
-                                 key='3d_type')
-
-        if plot_type == "Scatter":
-            fig_3d = create_3d_scatter(data, x_feature, y_feature, z_feature,
-                                       color_feature, size_feature)
-            st.plotly_chart(fig_3d, use_container_width=True)
-
-            st.write("### 3D Scatter Plot Features:")
-            st.write("""
-            - Drag to rotate the view
-            - Scroll to zoom in/out
-            - Double click to reset view
-            - Hover for point details
-            - Use legend to filter categories
-            """)
-        else:
-            fig_surface = create_3d_surface(data, x_feature, y_feature, z_feature)
-            st.plotly_chart(fig_surface, use_container_width=True)
-
-            st.write("### 3D Surface Plot Features:")
-            st.write("""
-            - Shows relationships between three variables
-            - Height represents z-value
-            - Color intensity indicates value magnitude
-            - Interactive rotation and zoom
-            """)
-
-        # Closing message
-    st.write("### Thank you for using the Breast Cancer Analysis App!")
+    st.write("### Thank you for using the Advanced Analytics Dashboard!")
 
     # Advanced Data Cleaning and EDA Tab
     with tab5:
