@@ -617,7 +617,7 @@ def production_space():
         run_treatment_planning()
 
 
-def create_3d_scatter(data, x_col, y_col, z_col, color_col=None, size_col=None, size_feature):
+def create_3d_scatter(data, x_col, y_col, z_col, size_feature, color_col=None, size_col=None):
     """
     Creates an interactive 3D scatter plot with customizable features
     """
@@ -1206,8 +1206,8 @@ def data_science_space():
             plot_3d_type = st.radio("Select 3D Plot Type", ["Scatter", "Surface"])
 
             if plot_3d_type == "Scatter":
-                fig_3d = create_3d_scatter(data, feature_x, feature_y, z_feature,
-                                           hue_feature, size_feature=feature_x)
+                fig_3d = create_3d_scatter(data, feature_x, feature_y, z_feature,size_feature=feature_x
+                                           hue_feature)
                 st.plotly_chart(fig_3d)
             else:
                 fig_surface = create_3d_surface(data, feature_x, feature_y, z_feature)
