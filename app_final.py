@@ -617,7 +617,7 @@ def production_space():
         run_treatment_planning()
 
 
-def create_3d_scatter(data, x_col, y_col, z_col, color_col=None, size_col=None, size_feature=x_col):
+def create_3d_scatter(data, x_col, y_col, z_col, color_col=None, size_col=None, size_feature):
     """
     Creates an interactive 3D scatter plot with customizable features
     """
