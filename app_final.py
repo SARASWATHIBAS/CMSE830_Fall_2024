@@ -1862,6 +1862,57 @@ def data_science_space():
             if dim_reduction == "PCA":
                 reducer = PCA(n_components=2)
                 reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
+                # Fit PCA for all components
+                pca_full = PCA()
+                pca_full.fit(X)
+
+                # Create scree plot
+                fig_scree = px.line(
+                    x=range(1, len(pca_full.explained_variance_ratio_) + 1),
+                    y=pca_full.explained_variance_ratio_,
+                    title='Scree Plot: Explained Variance Ratio by Component',
+                    labels={'x': 'Principal Component', 'y': 'Explained Variance Ratio'}
+                )
+                fig_scree.add_scatter(
+                    x=range(1, len(pca_full.explained_variance_ratio_) + 1),
+                    y=np.cumsum(pca_full.explained_variance_ratio_),
+                    name='Cumulative Variance Ratio'
+                )
+                st.plotly_chart(fig_scree)
+
+                # Display variance explained metrics
+                st.write("#### Variance Explained Metrics")
+                cumulative_var = np.cumsum(pca_full.explained_variance_ratio_)
+                for i, var in enumerate(cumulative_var, 1):
+                    if var > 0.9:
+                        st.write(f"• {i} components explain {var:.1%} of variance")
+                        break
+
+                # Elbow plot for choosing components
+                fig_elbow = px.line(
+                    x=range(1, len(pca_full.explained_variance_) + 1),
+                    y=pca_full.explained_variance_,
+                    title='Elbow Plot: Component Variance',
+                    labels={'x': 'Number of Components', 'y': 'Explained Variance'}
+                )
+                st.plotly_chart(fig_elbow)
+
+                # PCA with 2 components for visualization
+                reducer = PCA(n_components=2)
+                reduced_data = reducer.fit_transform(X)
+
+                # Component loadings heatmap
+                loadings = pd.DataFrame(
+                    reducer.components_.T,
+                    columns=['PC1', 'PC2'],
+                    index=numeric_cols
+                )
+                fig_loadings = px.imshow(
+                    loadings,
+                    title='PCA Component Loadings',
+                    labels=dict(x='Principal Components', y='Features')
+                )
+                st.plotly_chart(fig_loadings)
             elif dim_reduction == "t-SNE":
                 reducer = TSNE(n_components=2, random_state=42)
                 reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
