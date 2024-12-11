@@ -1861,59 +1861,57 @@ def data_science_space():
             X_scaled = StandardScaler().fit_transform(X)
 
             if dim_reduction == "PCA":
-                reducer = PCA(n_components=2)
-                reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
-                # Fit PCA for all components
+                # Fit PCA for selected components
                 pca_full = PCA()
                 pca_full.fit(X_scaled)
 
+                # Create x-axis values as list
+                components = list(range(1, len(pca_full.explained_variance_ratio_) + 1))
+
                 # Create scree plot
                 fig_scree = px.line(
-                    x=range(1, len(pca_full.explained_variance_ratio_) + 1),
+                    x=components,  # Now using list instead of range
                     y=pca_full.explained_variance_ratio_,
-                    title='Scree Plot: Explained Variance Ratio by Component',
+                    title=f'Scree Plot: Explained Variance Ratio for {", ".join(selected_cols)}',
                     labels={'x': 'Principal Component', 'y': 'Explained Variance Ratio'}
                 )
                 fig_scree.add_scatter(
-                    x=range(1, len(pca_full.explained_variance_ratio_) + 1),
+                    x=components,  # Now using list instead of range
                     y=np.cumsum(pca_full.explained_variance_ratio_),
                     name='Cumulative Variance Ratio'
                 )
                 st.plotly_chart(fig_scree)
 
-                # Display variance explained metrics
+                # Display variance explained for selected features
                 st.write("#### Variance Explained Metrics")
                 cumulative_var = np.cumsum(pca_full.explained_variance_ratio_)
                 for i, var in enumerate(cumulative_var, 1):
-                    if var > 0.9:
-                        st.write(f"• {i} components explain {var:.1%} of variance")
-                        break
+                    st.write(f"• {i} components explain {var:.1%} of variance")
 
-                # Elbow plot for choosing components
-                fig_elbow = px.line(
-                    x=range(1, len(pca_full.explained_variance_) + 1),
-                    y=pca_full.explained_variance_,
-                    title='Elbow Plot: Component Variance',
-                    labels={'x': 'Number of Components', 'y': 'Explained Variance'}
-                )
-                st.plotly_chart(fig_elbow)
-
-                # PCA with 2 components for visualization
+                # Component loadings heatmap for selected features
                 reducer = PCA(n_components=2)
                 reduced_data = reducer.fit_transform(X_scaled)
 
-                # Component loadings heatmap
                 loadings = pd.DataFrame(
                     reducer.components_.T,
                     columns=['PC1', 'PC2'],
-                    index=numeric_cols
+                    index=selected_cols
                 )
                 fig_loadings = px.imshow(
                     loadings,
-                    title='PCA Component Loadings',
+                    title='PCA Component Loadings for Selected Features',
                     labels=dict(x='Principal Components', y='Features')
                 )
                 st.plotly_chart(fig_loadings)
+
+                # Final PCA visualization
+                fig_final = px.scatter(
+                    x=reduced_data[:, 0], y=reduced_data[:, 1],
+                    color=data['Status'],
+                    title=f'PCA Visualization of Selected Features',
+                    labels={'x': 'PC1', 'y': 'PC2'}
+                )
+                st.plotly_chart(fig_final)
             elif dim_reduction == "t-SNE":
                 reducer = TSNE(n_components=2, random_state=42)
                 reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
