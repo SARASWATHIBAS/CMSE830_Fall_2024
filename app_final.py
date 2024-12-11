@@ -1858,13 +1858,14 @@ def data_science_space():
         if st.checkbox("Apply Dimensionality Reduction"):
             # Prepare numeric data
             X = data[numeric_cols].fillna(0)
+            X_scaled = StandardScaler().fit_transform(X)
 
             if dim_reduction == "PCA":
                 reducer = PCA(n_components=2)
                 reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
                 # Fit PCA for all components
                 pca_full = PCA()
-                pca_full.fit(X)
+                pca_full.fit(X_scaled)
 
                 # Create scree plot
                 fig_scree = px.line(
@@ -1899,7 +1900,7 @@ def data_science_space():
 
                 # PCA with 2 components for visualization
                 reducer = PCA(n_components=2)
-                reduced_data = reducer.fit_transform(X)
+                reduced_data = reducer.fit_transform(X_scaled)
 
                 # Component loadings heatmap
                 loadings = pd.DataFrame(
