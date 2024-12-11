@@ -2035,7 +2035,7 @@ def data_science_space():
         elif model_type == "Deep Learning":
             st.write("### Neural Network Model")
 
-            X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
+            X = data[['Age', 'Tumor Size', 'Reginol Node Examined']]
             y = label_encoder.fit_transform(data['Status'])
 
             X_scaled = StandardScaler().fit_transform(X)
