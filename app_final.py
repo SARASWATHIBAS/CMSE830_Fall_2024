@@ -1129,7 +1129,7 @@ def data_science_space():
                 filtered_data = data[
                     data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
 
-    
+
             # Common display section for both types
             if 'filtered_data' in locals() and not filtered_data.empty:
                 # Dynamic Inferences Section
@@ -1204,6 +1204,17 @@ def data_science_space():
 
             st.write("### Imputation Options")
 
+            # Analyze data distribution to recommend imputation method
+            numeric_cols = data.select_dtypes(include=['float64', 'int64']).columns
+            skewness = data[numeric_cols].skew()
+
+            st.write("#### Recommended Imputation Strategy:")
+            for col in numeric_cols:
+                if abs(skewness[col]) > 1:
+                    st.write(f"• {col}: Consider median imputation due to skewed distribution")
+                else:
+                    st.write(f"• {col}: Mean imputation suitable due to normal distribution")
+
             # Column selection for imputation
             columns_to_impute = st.multiselect(
                 "Select columns for imputation:",
@@ -1259,6 +1270,17 @@ def data_science_space():
                 st.write(data_imputed[columns_to_impute].head())
 
             # Encoding Categorical Variables
+            categorical_cols = data.select_dtypes(include=['object']).columns
+
+            if len(categorical_cols) > 0:
+                st.write("#### Cardinality Analysis:")
+                for col in categorical_cols:
+                    unique_values = data[col].nunique()
+                    if unique_values > 10:
+                        st.write(
+                            f"• {col}: High cardinality ({unique_values} unique values) - Consider target encoding")
+                    else:
+                        st.write(f"• {col}: Suitable for one-hot encoding ({unique_values} unique values)")
             encoding_method = st.selectbox("Choose encoding method", ("Label Encoding", "One-Hot Encoding"))
             if encoding_method == "Label Encoding":
                 label_column = st.selectbox("Select column for Label Encoding",
@@ -1272,6 +1294,19 @@ def data_science_space():
                 st.write("One-Hot Encoded Data:", data.head())
 
             # Normalization and Scaling
+            numeric_summary = data[numeric_cols].describe()
+
+            for col in numeric_cols:
+                range_val = numeric_summary.loc['max', col] - numeric_summary.loc['min', col]
+                std_val = numeric_summary.loc['std', col]
+
+                st.write(f"#### {col} Scaling Recommendation:")
+                if range_val > 100:
+                    st.write("• Consider Min-Max scaling due to large value range")
+                if std_val > 10:
+                    st.write("• Consider Standardization due to high standard deviation")
+                if abs(skewness[col]) > 2:
+                    st.write("• Consider Robust scaling due to significant outliers")
             scale_method = st.selectbox("Choose scaling method",
                                         ("Min-Max Scaling", "Standardization", "Robust Scaling"))
             if scale_method == "Min-Max Scaling":
@@ -1304,6 +1339,16 @@ def data_science_space():
                 st.write("Binned Age Groups:", data.head())
 
             # Handling Outliers: Z-Score and IQR Methods
+            # Outlier Analysis with Dynamic Insights
+            st.write("### Outlier Analysis")
+            for col in numeric_cols:
+                z_scores = np.abs(stats.zscore(data[col].dropna()))
+                outliers_count = len(z_scores[z_scores > 3])
+                if outliers_count > 0:
+                    percentage = (outliers_count / len(data)) * 100
+                    st.write(f"• {col}: {outliers_count} outliers detected ({percentage:.1f}% of data)")
+                    if percentage > 5:
+                        st.write("  - Consider investigating these outliers before removal")
             outlier_method = st.selectbox("Choose Outlier Detection Method", ("Z-Score Method", "IQR Method"))
 
             if outlier_method == "Z-Score Method":
@@ -1334,8 +1379,17 @@ def data_science_space():
                 st.write("Data after IQR Outlier Removal:", filtered_data.head())
 
             # Handling Imbalanced Data: SMOTE
+
             imbalanced = st.checkbox("Apply SMOTE to Handle Imbalanced Data")
+
             if imbalanced:
+                if 'target' in data.columns:
+                    st.write("### Class Balance Analysis")
+                    class_distribution = data['target'].value_counts(normalize=True) * 100
+                    if max(class_distribution) > 70:
+                        st.write("• Significant class imbalance detected")
+                        st.write(f"• Majority class: {class_distribution.index[0]} ({class_distribution.iloc[0]:.1f}%)")
+                        st.write("• Consider using SMOTE or class weights")
                 num_clusters = st.slider("Number of Clusters", min_value=2, max_value=10, value=3)
                 kmeans = KMeans(n_clusters=num_clusters, random_state=42)
                 cluster_labels = kmeans.fit_predict(data_scaled)
