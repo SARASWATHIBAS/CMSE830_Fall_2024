@@ -1627,6 +1627,46 @@ def data_science_space():
         st.write(quality_df)
 
         # 2. Statistical Analysis
+        st.header("Specialized Data Analysis")
+        st.subheader("Survival Time Analysis")
+
+        # Time-based analysis
+        time_data = data[['Survival Months', 'Age', 'Status']].copy()
+        time_data['Survival_Group'] = pd.qcut(time_data['Survival Months'],
+                                              q=4,
+                                              labels=['0-25%', '25-50%', '50-75%', '75-100%'])
+
+        # Survival Distribution
+        fig = px.box(
+            time_data,
+            x='Survival_Group',
+            y='Age',
+            color='Status',
+            title="Age Distribution by Survival Time Quartile"
+        )
+        st.plotly_chart(fig)
+
+        # Survival Trend Analysis
+        survival_trend = time_data.groupby('Survival_Group')['Status'].value_counts(normalize=True)
+        fig = px.line(
+            x=survival_trend.index.get_level_values(0).unique(),
+            y=survival_trend.loc[:, 'Alive'],
+            title="Survival Rate Trend by Time Group"
+        )
+        st.plotly_chart(fig)
+
+        # Time-based Feature Engineering
+        time_data['Survival_Rate'] = time_data['Survival Months'] / time_data['Age']
+
+        fig = px.scatter(
+            time_data,
+            x='Age',
+            y='Survival_Rate',
+            color='Status',
+            title="Survival Rate vs Age"
+        )
+        st.plotly_chart(fig)
+
         st.subheader("2. Statistical Analysis")
 
         # Numeric columns analysis
@@ -1950,7 +1990,7 @@ def data_science_space():
             st.write("### Survival Prediction Models")
             label_encoder = LabelEncoder()
             y = label_encoder.fit_transform(data['Status'])
-            X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
+            X = data[['Age', 'Tumor Size', 'Reginol Node Examined']]
 
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
@@ -2075,7 +2115,7 @@ def data_science_space():
             st.write("### Survival Months Prediction")
 
             # Feature and Target Selection
-            X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
+            X = data[['Age', 'Tumor Size', 'Reginol Node Examined']]
             y = data['Survival Months']
 
             # Train-Test Split
