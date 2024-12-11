@@ -6,6 +6,10 @@ import plotly.express as px
 from sklearn.preprocessing import QuantileTransformer
 from sklearn.decomposition import PCA
 from sklearn.manifold import TSNE
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.linear_model import LogisticRegression
+from sklearn.metrics import (accuracy_score, precision_score, recall_score,
+                           f1_score, roc_curve, roc_auc_score)
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
@@ -14,6 +18,9 @@ from sklearn.metrics import r2_score, mean_absolute_error, mean_squared_error
 from sklearn.metrics import silhouette_score
 from sklearn.model_selection import learning_curve
 from xgboost import XGBClassifier, XGBRegressor
+# Deep Learning
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout
 
 import seaborn as sns
 import matplotlib.pyplot as plt
@@ -1928,63 +1935,98 @@ def data_science_space():
             st.plotly_chart(fig)
 
 
-    # Modeling Tab
+
+        # Modeling Tab with Advanced Algorithms
     with tab7:
         st.markdown('<div class="tab-content">', unsafe_allow_html=True)
         st.header("Model Development & Evaluation")
 
-        # Model Selection Section
-        st.subheader("1. Model Selection")
         model_type = st.selectbox(
             "Select Model Type",
-            ["Classification", "Clustering", "Regression"]
+            ["Classification", "Deep Learning", "Clustering", "Regression"]
         )
 
         if model_type == "Classification":
-            # Classification Models
             st.write("### Survival Prediction Models")
             label_encoder = LabelEncoder()
-            y = label_encoder.fit_transform(data['Status'])  # This will convert 'Alive'/'Dead' to 0/1
-
-            # Feature Selection
+            y = label_encoder.fit_transform(data['Status'])
             X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
 
-            # Train-Test Split
             X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42)
 
-            # Model Training
+            # Simplified model selection
             models = {
-                'Random Forest': RandomForestClassifier(random_state=42),
-                'XGBoost': XGBClassifier(random_state=42),
+                'Random Forest': RandomForestClassifier(n_estimators=100, random_state=42),
+                'XGBoost': XGBClassifier(n_estimators=100, random_state=42),
                 'Logistic Regression': LogisticRegression(random_state=42)
             }
 
+            # Model evaluation
             results = {}
             for name, model in models.items():
                 model.fit(X_train, y_train)
                 y_pred = model.predict(X_test)
+
                 results[name] = {
                     'Accuracy': accuracy_score(y_test, y_pred),
-                    'Precision': precision_score(y_test, y_pred, average='weighted'),
-                    'Recall': recall_score(y_test, y_pred, average='weighted'),
-                    'F1': f1_score(y_test, y_pred, average='weighted')
+                    'Precision': precision_score(y_test, y_pred),
+                    'Recall': recall_score(y_test, y_pred)
                 }
 
-            # Results Visualization
+            # Visualization
             results_df = pd.DataFrame(results).T
-            fig = px.bar(results_df, barmode='group',
-                         title='Model Performance Comparison')
+            fig = px.bar(results_df,
+                         title='Model Performance Comparison',
+                         barmode='group')
             st.plotly_chart(fig)
 
-            # Feature Importance
+            # Feature importance for Random Forest
             if st.checkbox("Show Feature Importance"):
-                rf_model = models['Random Forest']
                 importance_df = pd.DataFrame({
                     'Feature': X.columns,
-                    'Importance': rf_model.feature_importances_
+                    'Importance': models['Random Forest'].feature_importances_
                 })
-                fig = px.bar(importance_df, x='Feature', y='Importance',
+                fig = px.bar(importance_df,
+                             x='Feature',
+                             y='Importance',
                              title='Feature Importance')
+                st.plotly_chart(fig)
+
+        elif model_type == "Deep Learning":
+            st.write("### Neural Network Model")
+
+            X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
+            y = label_encoder.fit_transform(data['Status'])
+
+            X_scaled = StandardScaler().fit_transform(X)
+            X_train, X_test, y_train, y_test = train_test_split(X_scaled, y, test_size=0.2)
+
+            model = Sequential([
+                Dense(32, activation='relu', input_shape=(X.shape[1],)),
+                Dense(16, activation='relu'),
+                Dense(1, activation='sigmoid')
+            ])
+
+            epochs = st.slider("Number of Epochs", 10, 50, 20)
+
+            if st.button("Train Neural Network"):
+                model.compile(optimizer='adam',
+                              loss='binary_crossentropy',
+                              metrics=['accuracy'])
+
+                history = model.fit(
+                    X_train, y_train,
+                    validation_split=0.2,
+                    epochs=epochs,
+                    batch_size=32,
+                    verbose=0
+                )
+
+                fig = px.line(
+                    y=[history.history['accuracy'], history.history['val_accuracy']],
+                    labels={'value': 'Accuracy', 'index': 'Epoch'},
+                    title='Training History'
+                )
                 st.plotly_chart(fig)
 
         elif model_type == "Clustering":
