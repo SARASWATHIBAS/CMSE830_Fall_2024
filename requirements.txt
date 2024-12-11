@@ -11,3 +11,4 @@ umap
 umap-learn
 xgboost
 datetime
+tensorflow
