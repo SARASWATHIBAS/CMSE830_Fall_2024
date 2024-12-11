@@ -1911,7 +1911,7 @@ def data_science_space():
                     title=f'PCA Visualization of Selected Features',
                     labels={'x': 'PC1', 'y': 'PC2'}
                 )
-                st.plotly_chart(fig_final)
+                ##st.plotly_chart(fig_final)
             elif dim_reduction == "t-SNE":
                 reducer = TSNE(n_components=2, random_state=42)
                 reduced_data = reducer.fit_transform(StandardScaler().fit_transform(X))
@@ -2078,7 +2078,20 @@ def data_science_space():
     with tab8:
         st.markdown("""
         # Technical Documentation
+        
+        ### Data Sources & Attribution
 
+        1. Breast Cancer Wisconsin (Diagnostic) Dataset
+            - Source: UCI Machine Learning Repository
+            - URL: https://archive.ics.uci.edu/ml/datasets/breast+cancer+wisconsin+(diagnostic)
+
+        2. Clinical Breast Cancer Data
+            - Source: SEER Breast Cancer Data
+            - URL: https://www.kaggle.com/datasets/sujithmandala/seer-breast-cancer-data
+
+        Created by: Saraswathi Baskaran
+        GitHub: [@saraswathibas](https://github.com/saraswathibas)
+        
         ## System Architecture
 
         ### Core Components
