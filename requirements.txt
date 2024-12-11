@@ -12,3 +12,4 @@ umap-learn
 xgboost
 datetime
 tensorflow
+joblib
