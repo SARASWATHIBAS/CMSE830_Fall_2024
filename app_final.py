@@ -824,22 +824,7 @@ def production_space():
 
 
     if tool_choice == "Risk Assessment":
-        st.subheader("Patient Risk Calculator")
-        col1, col2 = st.columns(2)
-
-        with col1:
-            age = st.number_input("Patient Age", 18, 100)
-            tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
-            nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50)
-
-        with col2:
-            grade = st.selectbox("Tumor Grade", ["1", "2", "3"])
-            stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"])
-            er_status = st.selectbox("ER Status", ["Positive", "Negative"])
-
-        if st.button("Calculate Risk Score"):
-            risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
-            st.metric("Risk Score", f"{risk_score:.2f}")
+        run_risk_assessment()
     elif tool_choice == "Survival Prediction":
         run_survival_prediction()
     elif tool_choice == "Treatment Planning":
