@@ -1872,7 +1872,7 @@ def data_science_space():
                 fig_scree = px.line(
                     x=components,  # Now using list instead of range
                     y=pca_full.explained_variance_ratio_,
-                    title=f'Scree Plot: Explained Variance Ratio for {", ".join(selected_cols)}',
+                    title=f'Scree Plot: Explained Variance Ratio for All features',
                     labels={'x': 'Principal Component', 'y': 'Explained Variance Ratio'}
                 )
                 fig_scree.add_scatter(
@@ -1895,7 +1895,7 @@ def data_science_space():
                 loadings = pd.DataFrame(
                     reducer.components_.T,
                     columns=['PC1', 'PC2'],
-                    index=selected_cols
+                    index=numeric_cols
                 )
                 fig_loadings = px.imshow(
                     loadings,
