@@ -683,7 +683,7 @@ def create_pair_plot(data, selected_numeric, hue_feature):
     plt.close()
 
 
-def get_visualization_insights(viz_type, dist_type, plot_3d_type, feature_x, feature_y, z_feature=None):
+def get_visualization_insights(viz_type, feature_x, feature_y, dist_type="Box Plot", plot_3d_type="Scatter",z_feature=None):
     insights = {
         "Scatter Plot Analysis": f"""
         #### Key Insights for {feature_x} vs {feature_y}:
@@ -1412,9 +1412,10 @@ def data_science_space():
                 # After each visualization
                 insights = get_visualization_insights(
                     viz_type=viz_type,
-                    dist_type=dist_type if 'dist_type' in locals() else None,
+
                     feature_x=feature_x,
-                    feature_y=feature_y
+                    feature_y=feature_y,
+                    dist_type=dist_type if 'dist_type' in locals() else None,
                 )
                 st.markdown(insights)
 
@@ -1446,10 +1447,11 @@ def data_science_space():
             # After each visualization
             insights = get_visualization_insights(
                 viz_type=viz_type,
-                dist_type=dist_type if 'dist_type' in locals() else None,
-                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
+
                 feature_x=feature_x,
                 feature_y=feature_y,
+                dist_type=dist_type if 'dist_type' in locals() else None,
+                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
                 z_feature=z_feature if 'z_feature' in locals() else None
             )
             st.markdown(insights)
@@ -1475,10 +1477,11 @@ def data_science_space():
             # After each visualization
             insights = get_visualization_insights(
                 viz_type=viz_type,
-                dist_type=dist_type if 'dist_type' in locals() else None,
-                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
+
                 feature_x=feature_x,
                 feature_y=feature_y,
+                dist_type=dist_type if 'dist_type' in locals() else None,
+                plot_3d_type=plot_3d_type if 'plot_3d_type' in locals() else None,
                 z_feature=z_feature if 'z_feature' in locals() else None
             )
             st.markdown(insights)
