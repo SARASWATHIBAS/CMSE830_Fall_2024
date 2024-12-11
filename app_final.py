@@ -11,6 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                            f1_score, roc_curve, roc_auc_score)
 from joblib import parallel_backend
+from tensorflow.keras.optimizers import Adam
 
 # Machine Learning
 from sklearn.model_selection import (train_test_split, RandomizedSearchCV,
@@ -2104,6 +2105,35 @@ def data_science_space():
                     title='Training History'
                 )
                 st.plotly_chart(fig)
+            if st.checkbox("Optimize Neural Network"):
+                learning_rates = [0.001, 0.01, 0.1]
+                batch_sizes = [16, 32, 64]
+
+                best_val_acc = 0
+                best_params = {}
+
+                with st.spinner("Optimizing parameters..."):
+                    for lr in learning_rates:
+                        for bs in batch_sizes:
+                            model.compile(optimizer=Adam(learning_rate=lr),
+                                          loss='binary_crossentropy',
+                                          metrics=['accuracy'])
+
+                            history = model.fit(
+                                X_train, y_train,
+                                validation_split=0.2,
+                                epochs=20,
+                                batch_size=bs,
+                                verbose=0
+                            )
+
+                            val_acc = max(history.history['val_accuracy'])
+                            if val_acc > best_val_acc:
+                                best_val_acc = val_acc
+                                best_params = {'learning_rate': lr, 'batch_size': bs}
+
+                st.write("Best Parameters:", best_params)
+                st.write("Best Validation Accuracy:", f"{best_val_acc:.3f}")
 
         elif model_type == "Clustering":
             st.write("### K-Means Clustering Analysis")
@@ -2192,6 +2222,34 @@ def data_science_space():
                               title=f'Learning Curves - {selected_model}',
                               labels={'x': 'Training Examples', 'y': 'Score'})
                 st.plotly_chart(fig)
+            if st.checkbox("Optimize Regression Models"):
+                reg_param_grids = {
+                    'Random Forest': {
+                        'n_estimators': [100, 200],
+                        'max_depth': [10, 20],
+                        'min_samples_split': [2, 5]
+                    },
+                    'XGBoost': {
+                        'n_estimators': [100, 200],
+                        'max_depth': [3, 5],
+                        'learning_rate': [0.01, 0.1]
+                    }
+                }
+
+                selected_reg_model = st.selectbox("Select Model to Optimize", list(reg_param_grids.keys()))
+
+                with parallel_backend('threading', n_jobs=-1):
+                    reg_search = RandomizedSearchCV(
+                        reg_models[selected_reg_model],
+                        reg_param_grids[selected_reg_model],
+                        n_iter=10,
+                        cv=5,
+                        n_jobs=-1
+                    )
+                    reg_search.fit(X_train, y_train)
+
+                st.write("Best Parameters:", reg_search.best_params_)
+                st.write("Best R2 Score:", f"{reg_search.best_score_:.3f}")
 
     with tab8:
         st.markdown("""
