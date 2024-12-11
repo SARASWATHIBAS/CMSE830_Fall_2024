@@ -31,6 +31,95 @@ from sklearn.cluster import KMeans
 from umap.umap_ import UMAP
 
 
+def generate_dynamic_risk_inferences(age, tumor_size, nodes_positive, grade, risk_score):
+    """Generate detailed clinical risk inferences"""
+    inferences = []
+
+    # Age-based inferences
+    if age < 40:
+        inferences.append("Early-onset case requiring careful genetic consideration")
+    elif age > 70:
+        inferences.append("Age-specific treatment modifications may be necessary")
+
+    # Tumor size inferences
+    if tumor_size < 20:
+        inferences.append("Early detection favorable for treatment outcomes")
+    elif tumor_size > 50:
+        inferences.append("Larger tumor size may indicate need for neoadjuvant therapy")
+
+    # Lymph node inferences
+    if nodes_positive == 0:
+        inferences.append("Node-negative status suggests localized disease")
+    elif nodes_positive > 3:
+        inferences.append("Multiple positive nodes indicate lymphatic involvement")
+
+    # Grade-based recommendations
+    grade_insights = {
+        "1": "Well-differentiated tumor - favorable prognosis",
+        "2": "Moderate differentiation - standard protocols indicated",
+        "3": "Poor differentiation - aggressive approach recommended"
+    }
+    inferences.append(grade_insights[grade])
+
+    return inferences
+
+
+def enhance_survival_prediction(age, stage, treatments, survival_curve):
+    """Generate comprehensive survival insights"""
+    insights = {
+        'short_term': [],
+        'long_term': [],
+        'recommendations': []
+    }
+
+    # Stage-specific insights
+    stage_insights = {
+        "I": "Early-stage disease with favorable outlook",
+        "II": "Good prognosis with appropriate intervention",
+        "III": "Local advancement requires multimodal therapy",
+        "IV": "Systemic disease management priority"
+    }
+    insights['short_term'].append(stage_insights[stage])
+
+    # Treatment combination analysis
+    if "Surgery" in treatments and "Chemotherapy" in treatments:
+        insights['recommendations'].append("Standard combination therapy on track")
+    if "Radiation" in treatments and age > 70:
+        insights['recommendations'].append("Consider radiation fractionation adjustment")
+
+    # Long-term outlook
+    five_year_prob = survival_curve['probability'][60]
+    if five_year_prob > 0.8:
+        insights['long_term'].append("Excellent long-term survival probability")
+    elif five_year_prob > 0.6:
+        insights['long_term'].append("Good long-term outlook with monitoring")
+    else:
+        insights['long_term'].append("Close surveillance and support recommended")
+
+    return insights
+
+
+def generate_treatment_insights(age, stage, comorbidities, plans):
+    """Generate personalized treatment insights"""
+    insights = []
+
+    # Age-specific considerations
+    if age > 75:
+        insights.append("Consider treatment de-escalation based on age")
+
+    # Comorbidity impact
+    if "Diabetes" in comorbidities:
+        insights.append("Monitor glucose levels during treatment")
+    if "Heart Disease" in comorbidities:
+        insights.append("Cardiac monitoring during therapy recommended")
+
+    # Stage-specific approach
+    if stage in ["III", "IV"]:
+        insights.append("Multimodal therapy approach indicated")
+
+    return insights
+
+
 def calculate_risk_score(age, tumor_size, nodes_positive, grade):
     """Calculate comprehensive risk score based on clinical parameters"""
     # Normalize inputs
@@ -284,6 +373,16 @@ def run_risk_assessment():
     if st.button("Calculate Risk Score"):
         risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
         st.metric("Risk Score", f"{risk_score:.2f}")
+    if st.button("Calculate Risk Score"):
+        risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
+        st.metric("Risk Score", f"{risk_score:.2f}")
+
+        # Display dynamic inferences
+        st.write("### Clinical Insights")
+        inferences = generate_dynamic_risk_inferences(age, tumor_size, nodes_positive, grade, risk_score)
+        for inference in inferences:
+            st.write(f"• {inference}")
+
 
 def run_survival_prediction():
     st.subheader("Survival Prediction Tool")
@@ -300,7 +399,26 @@ def run_survival_prediction():
         survival_curve = predict_survival(age, stage, treatment)
         plot_survival_curve(survival_curve)
         display_survival_metrics(survival_curve)
+    if st.button("Generate Prediction"):
+        survival_curve = predict_survival(age, stage, treatment)
+        plot_survival_curve(survival_curve)
+        display_survival_metrics(survival_curve)
 
+        # Display enhanced survival insights
+        insights = enhance_survival_prediction(age, stage, treatment, survival_curve)
+
+        st.write("### Clinical Assessment")
+        st.write("**Short-term Outlook:**")
+        for insight in insights['short_term']:
+            st.write(f"• {insight}")
+
+        st.write("**Long-term Outlook:**")
+        for insight in insights['long_term']:
+            st.write(f"• {insight}")
+
+        st.write("**Recommendations:**")
+        for rec in insights['recommendations']:
+            st.write(f"• {rec}")
 
 def run_treatment_planning():
     st.subheader("Treatment Planning Assistant")
@@ -317,7 +435,15 @@ def run_treatment_planning():
     if st.button("Generate Treatment Plans"):
         plans = generate_treatment_plans(age, stage, comorbidities)
         display_treatment_options(plans)
+    if st.button("Generate Treatment Plans"):
+        plans = generate_treatment_plans(age, stage, comorbidities)
+        display_treatment_options(plans)
 
+        # Display treatment insights
+        st.write("### Treatment Considerations")
+        insights = generate_treatment_insights(age, stage, comorbidities, plans)
+        for insight in insights:
+            st.write(f"• {insight}")
 
 def display_input_requirements():
     st.markdown("""
