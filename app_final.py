@@ -10,6 +10,11 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import (accuracy_score, precision_score, recall_score,
                            f1_score, roc_curve, roc_auc_score)
+from joblib import parallel_backend
+
+# Machine Learning
+from sklearn.model_selection import (train_test_split, RandomizedSearchCV,
+                                   learning_curve)
 
 from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 from sklearn.linear_model import LogisticRegression
@@ -2031,6 +2036,37 @@ def data_science_space():
                              y='Importance',
                              title='Feature Importance')
                 st.plotly_chart(fig)
+            if st.checkbox("Optimize Hyperparameters"):
+                param_grids = {
+                    'Random Forest': {
+                        'n_estimators': [100, 200, 300],
+                        'max_depth': [10, 20, 30],
+                        'min_samples_split': [2, 5, 10]
+                    },
+                    'XGBoost': {
+                        'n_estimators': [100, 200],
+                        'max_depth': [3, 5, 7],
+                        'learning_rate': [0.01, 0.1]
+                    }
+                }
+
+                selected_model = st.selectbox("Select Model to Optimize", list(param_grids.keys()))
+
+                with parallel_backend('threading', n_jobs=-1):
+                    search = RandomizedSearchCV(
+                        models[selected_model],
+                        param_grids[selected_model],
+                        n_iter=10,
+                        cv=5,
+                        n_jobs=-1
+                    )
+                    search.fit(X_train, y_train)
+
+                st.write("Best Parameters:", search.best_params_)
+                st.write("Best Score:", f"{search.best_score_:.3f}")
+
+                # Update model with best parameters
+                models[selected_model] = search.best_estimator_
 
         elif model_type == "Deep Learning":
             st.write("### Neural Network Model")
