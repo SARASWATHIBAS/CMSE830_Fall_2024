@@ -361,89 +361,136 @@ def run_risk_assessment():
 
     col1, col2 = st.columns(2)
     with col1:
-        age = st.number_input("Patient Age", 18, 100)
-        tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0)
-        nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50)
+        age = st.number_input("Patient Age", 18, 100, key="risk_age")
+        tumor_size = st.number_input("Tumor Size (mm)", 0.0, 200.0, key="risk_size")
+        nodes_positive = st.number_input("Positive Lymph Nodes", 0, 50, key="risk_nodes")
 
     with col2:
-        grade = st.selectbox("Tumor Grade", ["1", "2", "3"])
-        stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"])
-        er_status = st.selectbox("ER Status", ["Positive", "Negative"])
+        grade = st.selectbox("Tumor Grade", ["1", "2", "3"], key="risk_grade")
+        stage = st.selectbox("Cancer Stage", ["I", "II", "III", "IV"], key="risk_stage")
+        er_status = st.selectbox("ER Status", ["Positive", "Negative"], key="risk_er")
 
-    if st.button("Calculate Risk Score"):
-        risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
-        st.metric("Risk Score", f"{risk_score:.2f}")
-    if st.button("Calculate Risk Score"):
+    if st.button("Calculate Risk Score", key="risk_button"):
         risk_score = calculate_risk_score(age, tumor_size, nodes_positive, grade)
         st.metric("Risk Score", f"{risk_score:.2f}")
 
-        # Display dynamic inferences
-        st.write("### Clinical Insights")
-        inferences = generate_dynamic_risk_inferences(age, tumor_size, nodes_positive, grade, risk_score)
-        for inference in inferences:
-            st.write(f"• {inference}")
+        # Dynamic Risk Inferences
+        st.write("### Clinical Risk Assessment")
+        risk_inferences = {
+            'High Risk Factors': [],
+            'Protective Factors': [],
+            'Recommendations': []
+        }
+
+        # Age analysis
+        if age < 40:
+            risk_inferences['High Risk Factors'].append("Early onset indicates possible genetic factors")
+        elif age > 70:
+            risk_inferences['Recommendations'].append("Consider age-adjusted treatment protocols")
+
+        # Tumor characteristics
+        if tumor_size > 50:
+            risk_inferences['High Risk Factors'].append("Large tumor size suggests advanced disease")
+        else:
+            risk_inferences['Protective Factors'].append("Tumor size within manageable range")
+
+        # Display inferences
+        for category, insights in risk_inferences.items():
+            if insights:
+                st.write(f"**{category}:**")
+                for insight in insights:
+                    st.write(f"• {insight}")
 
 
 def run_survival_prediction():
     st.subheader("Survival Prediction Tool")
 
-    # Patient characteristics
-    age = st.number_input("Age", 18, 100, 50)
-    stage = st.selectbox("Disease Stage", ["I", "II", "III", "IV"])
+    age = st.number_input("Age", 18, 100, 50, key="survival_age")
+    stage = st.selectbox("Disease Stage", ["I", "II", "III", "IV"], key="survival_stage")
     treatment = st.multiselect(
         "Selected Treatments",
-        ["Surgery", "Chemotherapy", "Radiation", "Hormone Therapy"]
+        ["Surgery", "Chemotherapy", "Radiation", "Hormone Therapy"],
+        key="survival_treatments"
     )
 
-    if st.button("Generate Prediction"):
-        survival_curve = predict_survival(age, stage, treatment)
-        plot_survival_curve(survival_curve)
-        display_survival_metrics(survival_curve)
-    if st.button("Generate Prediction"):
+    if st.button("Generate Prediction", key="survival_button"):
         survival_curve = predict_survival(age, stage, treatment)
         plot_survival_curve(survival_curve)
         display_survival_metrics(survival_curve)
 
-        # Display enhanced survival insights
-        insights = enhance_survival_prediction(age, stage, treatment, survival_curve)
+        # Dynamic Survival Inferences
+        st.write("### Survival Analysis Insights")
+        survival_insights = {
+            'Prognosis Factors': [],
+            'Treatment Impact': [],
+            'Monitoring Recommendations': []
+        }
 
-        st.write("### Clinical Assessment")
-        st.write("**Short-term Outlook:**")
-        for insight in insights['short_term']:
-            st.write(f"• {insight}")
+        # Stage-based analysis
+        stage_insights = {
+            "I": "Early stage with excellent prognosis",
+            "II": "Good prognosis with appropriate intervention",
+            "III": "Moderate prognosis requiring aggressive treatment",
+            "IV": "Guarded prognosis - focus on quality of life"
+        }
+        survival_insights['Prognosis Factors'].append(stage_insights[stage])
 
-        st.write("**Long-term Outlook:**")
-        for insight in insights['long_term']:
-            st.write(f"• {insight}")
+        # Treatment analysis
+        if len(treatment) >= 3:
+            survival_insights['Treatment Impact'].append("Comprehensive treatment approach selected")
 
-        st.write("**Recommendations:**")
-        for rec in insights['recommendations']:
-            st.write(f"• {rec}")
+        # Display insights
+        for category, insights in survival_insights.items():
+            if insights:
+                st.write(f"**{category}:**")
+                for insight in insights:
+                    st.write(f"• {insight}")
+
 
 def run_treatment_planning():
     st.subheader("Treatment Planning Assistant")
 
-    # Patient profile
     st.write("### Patient Profile")
-    age = st.number_input("Age", 18, 100, 50)
-    stage = st.selectbox("Stage", ["I", "II", "III", "IV"])
+    age = st.number_input("Age", 18, 100, 50, key="treatment_age")
+    stage = st.selectbox("Stage", ["I", "II", "III", "IV"], key="treatment_stage")
     comorbidities = st.multiselect(
         "Comorbidities",
-        ["Diabetes", "Hypertension", "Heart Disease", "None"]
+        ["Diabetes", "Hypertension", "Heart Disease", "None"],
+        key="treatment_comorbidities"
     )
 
-    if st.button("Generate Treatment Plans"):
-        plans = generate_treatment_plans(age, stage, comorbidities)
-        display_treatment_options(plans)
-    if st.button("Generate Treatment Plans"):
+    if st.button("Generate Treatment Plans", key="treatment_button"):
         plans = generate_treatment_plans(age, stage, comorbidities)
         display_treatment_options(plans)
 
-        # Display treatment insights
-        st.write("### Treatment Considerations")
-        insights = generate_treatment_insights(age, stage, comorbidities, plans)
-        for insight in insights:
-            st.write(f"• {insight}")
+        # Dynamic Treatment Inferences
+        st.write("### Treatment Strategy Insights")
+        treatment_insights = {
+            'Key Considerations': [],
+            'Risk Factors': [],
+            'Optimization Suggestions': []
+        }
+
+        # Age-based considerations
+        if age > 75:
+            treatment_insights['Key Considerations'].append("Consider reduced treatment intensity")
+
+        # Comorbidity analysis
+        for comorbidity in comorbidities:
+            if comorbidity != "None":
+                treatment_insights['Risk Factors'].append(f"Monitor {comorbidity.lower()} during treatment")
+
+        # Stage-based recommendations
+        if stage in ["III", "IV"]:
+            treatment_insights['Optimization Suggestions'].append("Consider clinical trial eligibility")
+
+        # Display insights
+        for category, insights in treatment_insights.items():
+            if insights:
+                st.write(f"**{category}:**")
+                for insight in insights:
+                    st.write(f"• {insight}")
+
 
 def display_input_requirements():
     st.markdown("""
