@@ -1820,6 +1820,15 @@ def data_science_space():
 
             fig.update_layout(height=400, title_text="Age Analysis")
             st.plotly_chart(fig)
+            st.write("### Age Distribution Insights")
+            age_stats = {
+                'Most Common Age Group': data['Age_Group'].mode()[0],
+                'Age Group Distribution': data['Age_Group'].value_counts(normalize=True).round(3),
+                'Survival Rate by Age Group':
+                    data.groupby('Age_Group')['Status'].value_counts(normalize=True).unstack()['Alive'].round(3)
+            }
+            st.write(age_stats)
+
 
         # Survival Risk Score
         if st.checkbox("Generate Survival Risk Score"):
@@ -1833,8 +1842,15 @@ def data_science_space():
                                title='Distribution of Risk Scores',
                                nbins=30)
             st.plotly_chart(fig)
+            st.write("### Risk Score Analysis")
+            risk_insights = {
+                'Average Risk Score': f"{data['Risk_Score'].mean():.2f}",
+                'High Risk Patients (>75th percentile)': f"{(data['Risk_Score'] > data['Risk_Score'].quantile(0.75)).sum()} patients",
+                'Risk Score Correlation with Survival': f"{data['Risk_Score'].corr(data['Survival Months']):.2f}"
+            }
+            st.write(risk_insights)
 
-        # 2. Feature Transformation
+    # 2. Feature Transformation
         st.subheader("2. Advanced Transformations")
 
         transform_type = st.selectbox(
@@ -1874,6 +1890,15 @@ def data_science_space():
 
             fig.update_layout(height=400, title_text=f"{transform_type} Transformation")
             st.plotly_chart(fig)
+            st.write("### Transformation Impact")
+            skew_before = data[selected_col].skew()
+            skew_after = transformed_data.skew()
+            transform_insights = {
+                'Original Skewness': f"{skew_before:.2f}",
+                'Transformed Skewness': f"{skew_after:.2f}",
+                'Improvement in Normality': f"{abs(skew_before) - abs(skew_after):.2f}"
+            }
+            st.write(transform_insights)
 
         # 3. Feature Interactions
         st.subheader("3. Feature Interactions")
@@ -1899,6 +1924,22 @@ def data_science_space():
                 st.write("New Interaction Features:")
                 st.write(data[[f'{selected_features[0]}_{selected_features[1]}_interaction',
                                f'{selected_features[0]}_{selected_features[1]}_ratio']].describe())
+                # Interaction Insights
+                st.write("### Feature Interaction Insights")
+                interaction_insights = {
+                    'Correlation with Survival': {
+                        'Multiplication': data[f'{selected_features[0]}_{selected_features[1]}_interaction'].corr(
+                            data['Survival Months']),
+                        'Ratio': data[f'{selected_features[0]}_{selected_features[1]}_ratio'].corr(
+                            data['Survival Months'])
+                    },
+                    'Most Predictive Interaction': 'Multiplication' if abs(
+                        data[f'{selected_features[0]}_{selected_features[1]}_interaction'].corr(
+                            data['Survival Months'])) > abs(
+                        data[f'{selected_features[0]}_{selected_features[1]}_ratio'].corr(
+                            data['Survival Months'])) else 'Ratio'
+                }
+                st.write(interaction_insights)
 
         # 4. Dimensionality Reduction
         st.subheader("4. Dimensionality Reduction")
@@ -1979,8 +2020,20 @@ def data_science_space():
                 title=f'{dim_reduction} Visualization'
             )
             st.plotly_chart(fig)
-
-
+            # Dimensionality Reduction Insights
+            st.write("### Dimensionality Reduction Insights")
+            if dim_reduction == "PCA":
+                dr_insights = {
+                    'Explained Variance (2 Components)': f"{sum(pca_full.explained_variance_ratio_[:2]):.2%}",
+                    'Most Important Feature': numeric_cols[np.argmax(np.abs(reducer.components_[0]))],
+                    'Number of Components for 90% Variance': len([x for x in cumulative_var if x <= 0.9]) + 1
+                }
+            else:
+                dr_insights = {
+                    'Cluster Separation': silhouette_score(reduced_data, label_encoder.fit_transform(data['Status'])),
+                    'Number of Distinct Groups': len(np.unique(reduced_data, axis=0))
+                }
+            st.write(dr_insights)
 
         # Modeling Tab with Advanced Algorithms
     with tab7:
