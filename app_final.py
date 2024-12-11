@@ -2115,7 +2115,7 @@ def data_science_space():
             st.write("### Survival Months Prediction")
 
             # Feature and Target Selection
-            X = data[['Age', 'Tumor Size', 'Reginol Node Examined']]
+            X = data[['Age', 'Tumor Size', 'Reginol Node Positive']]
             y = data['Survival Months']
 
             # Train-Test Split
