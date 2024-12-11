@@ -1148,9 +1148,72 @@ def data_science_space():
                         st.plotly_chart(fig)
         elif 'filtered_data' in locals():
             st.warning("No results found.")
+            # Common display section for both types
+            if 'filtered_data' in locals() and not filtered_data.empty:
+                # Dynamic Inferences Section
+                st.write("### Data Insights")
+
+                # Row count analysis
+                total_rows = len(data)
+                filtered_rows = len(filtered_data)
+                percentage = (filtered_rows / total_rows) * 100
+
+                st.write(f"#### Sample Size Analysis")
+                st.write(f"• Found {filtered_rows} matching records ({percentage:.1f}% of total data)")
+
+                if percentage > 50:
+                    st.write("• This represents a majority of the dataset")
+                elif percentage < 10:
+                    st.write("• This represents a small subset of the dataset")
+
+                # Value distribution insights
+                if filtered_rows > 1:
+                    numeric_cols = filtered_data.select_dtypes(include=np.number).columns
+                    if len(numeric_cols) > 0:
+                        st.write("#### Numeric Patterns")
+                        for col in numeric_cols:
+                            mean_val = filtered_data[col].mean()
+                            overall_mean = data[col].mean()
+
+                            if mean_val > overall_mean:
+                                st.write(f"• {col}: Values are higher than dataset average")
+                            else:
+                                st.write(f"• {col}: Values are lower than dataset average")
+
+                # Display basic statistics
+                st.write("### Summary Statistics")
+                st.write(filtered_data.describe(include='all'))
+
+                # Additional insights for numeric columns
+                numeric_cols = filtered_data.select_dtypes(include=np.number).columns
+                if len(numeric_cols) > 0:
+                    st.write("#### Numeric Statistics")
+                    stats_df = filtered_data[numeric_cols].agg(['mean', 'median', 'min', 'max', 'count'])
+                    st.write(stats_df)
+
+                    # Statistical significance insights
+                    st.write("#### Statistical Significance")
+                    for col in numeric_cols:
+                        overall_std = data[col].std()
+                        filtered_mean = filtered_data[col].mean()
+                        overall_mean = data[col].mean()
+
+                        if abs(filtered_mean - overall_mean) > overall_std:
+                            st.write(f"• {col} shows significant deviation from overall pattern")
+
+                    # Optional: Add visualization
+                    if st.checkbox("Show Distribution Plot"):
+                        for col in numeric_cols:
+                            fig = px.histogram(filtered_data, x=col,
+                                               title=f"Distribution of {col}",
+                                               marginal="box")  # Added box plot for additional insight
+                            st.plotly_chart(fig)
+
+            elif 'filtered_data' in locals():
+                st.warning("No results found. Try adjusting your search criteria.")
 
         st.write("Thank you for using the Breast Cancer Analysis App!")
-        # Tab 8: Advanced Data Cleaning and Preprocessing
+        # Tab 3: Advanced Data Cleaning and Preprocessing
         with tab3:
             st.markdown('<div class="tab-content">', unsafe_allow_html=True)
             st.subheader("Advanced Data Cleaning and Preprocessing")
