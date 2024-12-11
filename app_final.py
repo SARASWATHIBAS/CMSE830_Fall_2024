@@ -1129,25 +1129,7 @@ def data_science_space():
                 filtered_data = data[
                     data[search_column].astype(str).str.contains(str(search_value), case=False, na=False)]
 
-        # Common display section for both types
-        if 'filtered_data' in locals() and not filtered_data.empty:
-            # Display basic statistics
-            st.write("### Summary Statistics")
-            st.write(filtered_data.describe(include='all'))
-
-            # Additional insights for numeric columns
-            numeric_cols = filtered_data.select_dtypes(include=np.number).columns
-            if len(numeric_cols) > 0:
-                st.write("#### Numeric Statistics")
-                st.write(filtered_data[numeric_cols].agg(['mean', 'median', 'min', 'max', 'count']))
-
-                # Optional: Add visualization
-                if st.checkbox("Show Distribution Plot"):
-                    for col in numeric_cols:
-                        fig = px.histogram(filtered_data, x=col, title=f"Distribution of {col}")
-                        st.plotly_chart(fig)
-        elif 'filtered_data' in locals():
-            st.warning("No results found.")
+    
             # Common display section for both types
             if 'filtered_data' in locals() and not filtered_data.empty:
                 # Dynamic Inferences Section
@@ -1200,14 +1182,6 @@ def data_science_space():
 
                         if abs(filtered_mean - overall_mean) > overall_std:
                             st.write(f"• {col} shows significant deviation from overall pattern")
-
-                    # Optional: Add visualization
-                    if st.checkbox("Show Distribution Plot"):
-                        for col in numeric_cols:
-                            fig = px.histogram(filtered_data, x=col,
-                                               title=f"Distribution of {col}",
-                                               marginal="box")  # Added box plot for additional insight
-                            st.plotly_chart(fig)
 
             elif 'filtered_data' in locals():
                 st.warning("No results found. Try adjusting your search criteria.")
